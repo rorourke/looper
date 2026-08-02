@@ -379,7 +379,7 @@ private enum LooperInstaller {
       throw InstallerError.archiveIsInvalid
     }
     try validateRelease(release, at: appURL)
-    try verifySignature(of: appURL)
+    try verifySignature(of: appURL, strict: true)
 
     let applicationsDirectory = try installationDirectory(requestedDirectory)
     let destination = applicationsDirectory.appendingPathComponent(
@@ -402,7 +402,11 @@ private enum LooperInstaller {
     do {
       try fileManager.copyItem(at: appURL, to: incoming)
       try validateRelease(release, at: incoming)
-      try verifySignature(of: incoming)
+      // File Provider-backed destinations such as iCloud Desktop can attach
+      // FinderInfo while copying. The downloaded archive has already passed
+      // strict validation, so verify the copied code without rejecting that
+      // destination-owned metadata.
+      try verifySignature(of: incoming, strict: false)
 
       if fileManager.fileExists(atPath: destination.path) {
         try fileManager.moveItem(at: destination, to: backup)
@@ -509,7 +513,7 @@ private enum LooperInstaller {
     )
   }
 
-  private static func verifySignature(of appURL: URL) throws {
+  private static func verifySignature(of appURL: URL, strict: Bool) throws {
     #if DEBUG_INSTALLER
       if ProcessInfo.processInfo.environment[
         "LOOPER_INSTALLER_ALLOW_UNSIGNED_FOR_TESTING"
@@ -525,16 +529,19 @@ private enum LooperInstaller {
       anchor apple generic and identifier "\(looperBundleIdentifier)" \
       and certificate leaf[subject.OU] = "\(teamIdentifier)"
       """
+    var verificationArguments = [
+      "--verify",
+      "--deep",
+      "--all-architectures",
+      "-R=\(requirement)",
+      appURL.path,
+    ]
+    if strict {
+      verificationArguments.insert("--strict", at: 2)
+    }
     try run(
       "/usr/bin/codesign",
-      arguments: [
-        "--verify",
-        "--deep",
-        "--strict",
-        "--all-architectures",
-        "-R=\(requirement)",
-        appURL.path,
-      ],
+      arguments: verificationArguments,
       failure: .signatureIsInvalid
     )
     try run(
