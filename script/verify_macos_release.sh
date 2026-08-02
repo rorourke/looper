@@ -198,7 +198,7 @@ verify_installer_app() {
   local app_bundle="$1"
   local architectures
   local signing_details
-  local team_identifier
+  local installer_team_identifier
 
   if [ ! -d "$app_bundle" ]; then
     echo "No packaged Install Looper.app bundle was found at $app_bundle." >&2
@@ -217,11 +217,11 @@ verify_installer_app() {
     echo "$app_bundle is not signed with a Developer ID Application certificate." >&2
     exit 1
   fi
-  team_identifier="$(
+  installer_team_identifier="$(
     sed -n 's/^TeamIdentifier=//p' <<<"$signing_details" |
       head -n 1
   )"
-  if [ "$team_identifier" != "$release_team_identifier" ]; then
+  if [ "$installer_team_identifier" != "$release_team_identifier" ]; then
     echo "$app_bundle is not signed by the same team as Looper.app." >&2
     exit 1
   fi
