@@ -98,3 +98,23 @@ test("macOS releases bind the installer to the app signing team without a hard-c
     /installer_team_identifier[\s\S]*release_team_identifier/
   );
 });
+
+test("the macOS installer verifies the downloaded executable architecture with valid lipo syntax", async () => {
+  const installerSource = await readFile(
+    new URL("../../../installer/Sources/InstallerApp.swift", import.meta.url),
+    "utf8"
+  );
+
+  assert.match(
+    installerSource,
+    /arguments:\s*\[executableURL\.path, "-verify_arch", looperArchitecture\]/
+  );
+  assert.doesNotMatch(
+    installerSource,
+    /arguments:\s*\["-verify_arch", looperArchitecture, executableURL\.path\]/
+  );
+  assert.ok(installerSource.includes('"-R=\\(requirement)"'));
+  assert.ok(
+    !installerSource.includes('"--test-requirement=\\(requirement)"')
+  );
+});

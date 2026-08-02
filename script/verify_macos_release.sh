@@ -185,10 +185,81 @@ if [ "$dmg_count" -eq 0 ]; then
 fi
 
 zip_count=0
+zip_validation_root="${TMPDIR:-/tmp}"
+zip_validation_root="${zip_validation_root%/}"
+zip_validation_dir=""
+cleanup_zip_validation() {
+  if [ -z "$zip_validation_dir" ]; then
+    return
+  fi
+  case "$zip_validation_dir" in
+    "$zip_validation_root"/looper-zip-verify.*)
+      rm -rf "$zip_validation_dir"
+      zip_validation_dir=""
+      ;;
+    *)
+      echo "Refusing to clean unexpected ZIP validation directory: $zip_validation_dir" >&2
+      ;;
+  esac
+}
+trap cleanup_zip_validation EXIT
+
 while IFS= read -r -d '' zip_path; do
+  zip_name="$(basename "$zip_path")"
+  if [[ ! "$zip_name" =~ ^Looper-([0-9]+\.[0-9]+\.[0-9]+)-macOS-(arm64|x64)\.zip$ ]]; then
+    echo "Unexpected updater ZIP name: $zip_name" >&2
+    exit 1
+  fi
+  expected_version="${BASH_REMATCH[1]}"
+  case "${BASH_REMATCH[2]}" in
+    arm64)
+      expected_zip_architecture="arm64"
+      ;;
+    x64)
+      expected_zip_architecture="x86_64"
+      ;;
+  esac
+
   unzip -tq "$zip_path"
+  zip_validation_dir="$(
+    mktemp -d "$zip_validation_root/looper-zip-verify.XXXXXX"
+  )"
+  /usr/bin/ditto -x -k --noqtn "$zip_path" "$zip_validation_dir"
+  zip_app="$zip_validation_dir/Looper.app"
+  if [ ! -d "$zip_app" ] || [ -L "$zip_app" ]; then
+    echo "$zip_name does not contain Looper.app at its root." >&2
+    exit 1
+  fi
+
+  zip_bundle_identifier="$(
+    /usr/libexec/PlistBuddy -c "Print :CFBundleIdentifier" \
+      "$zip_app/Contents/Info.plist"
+  )"
+  zip_version="$(
+    /usr/libexec/PlistBuddy -c "Print :CFBundleShortVersionString" \
+      "$zip_app/Contents/Info.plist"
+  )"
+  if [ "$zip_bundle_identifier" != "com.nickbolton.looper.electron" ]; then
+    echo "$zip_name has an unexpected bundle identifier." >&2
+    exit 1
+  fi
+  if [ "$zip_version" != "$expected_version" ]; then
+    echo "$zip_name contains Looper $zip_version, expected $expected_version." >&2
+    exit 1
+  fi
+
+  lipo "$zip_app/Contents/MacOS/Looper" \
+    -verify_arch "$expected_zip_architecture"
+  codesign --verify --deep --strict --all-architectures \
+    "-R=anchor apple generic and identifier \"com.nickbolton.looper.electron\" and certificate leaf[subject.OU] = \"$release_team_identifier\"" \
+    "$zip_app"
+  spctl --assess --type execute --verbose=4 "$zip_app"
+  xcrun stapler validate "$zip_app"
+
+  cleanup_zip_validation
   zip_count=$((zip_count + 1))
 done < <(find "$RELEASE_DIR" -maxdepth 1 -type f -name "Looper-*-macOS-*.zip" -print0)
+trap - EXIT
 if [ "$zip_count" -eq 0 ]; then
   echo "No ZIP updater archive was produced." >&2
   exit 1
