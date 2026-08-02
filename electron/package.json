@@ -1,0 +1,108 @@
+{
+  "name": "looper-electron",
+  "productName": "Looper",
+  "version": "0.1.0",
+  "description": "A fast, local-first workspace for repeatable calculations and scenario loops.",
+  "author": "Ryan O'Rourke <ryano@hey.com>",
+  "homepage": "https://looper.app",
+  "private": true,
+  "packageManager": "pnpm@11.9.0",
+  "type": "module",
+  "main": "out/main/index.js",
+  "scripts": {
+    "dev": "electron-vite dev",
+    "test": "node --experimental-transform-types --test src/main/*.test.ts src/renderer/src/*.test.ts src/shared/*.test.ts",
+    "typecheck": "tsc --noEmit",
+    "build": "tsc --noEmit && electron-vite build && node ../script/verify_client_artifacts.mjs electron",
+    "verify:artifacts": "node ../script/verify_client_artifacts.mjs electron",
+    "verify:security-config": "node ../script/verify_electron_security_config.mjs",
+    "preview": "electron-vite preview",
+    "dist": "../script/package_macos.sh release all",
+    "dist:unsigned": "../script/package_macos.sh unsigned arm64",
+    "dist:windows": "../script/package_windows.sh x64",
+    "dist:windows:arm64": "../script/package_windows.sh arm64",
+    "dist:installer:unsigned": "../script/package_macos_installer.sh unsigned",
+    "preview:installer": "../script/preview_macos_installer.sh"
+  },
+  "dependencies": {
+    "electron-updater": "6.8.9"
+  },
+  "devDependencies": {
+    "@electron/fuses": "2.1.3",
+    "@types/node": "^26.1.1",
+    "@types/react": "^19.2.17",
+    "@types/react-dom": "^19.2.3",
+    "@vercel/blob": "2.4.0",
+    "@vitejs/plugin-react": "^6.0.3",
+    "decimal.js": "^10.6.0",
+    "electron": "^43.1.1",
+    "electron-builder": "^26.15.3",
+    "electron-vite": "^5.0.0",
+    "lucide-react": "^1.25.0",
+    "react": "^19.2.7",
+    "react-dom": "^19.2.7",
+    "rebound": "0.1.0",
+    "typescript": "^7.0.2",
+    "vite": "^8.1.5"
+  },
+  "build": {
+    "appId": "com.nickbolton.looper.electron",
+    "afterPack": "build/restrictMacTransportSecurity.cjs",
+    "asar": true,
+    "electronFuses": {
+      "runAsNode": false,
+      "enableCookieEncryption": true,
+      "enableNodeOptionsEnvironmentVariable": false,
+      "enableNodeCliInspectArguments": false,
+      "enableEmbeddedAsarIntegrityValidation": true,
+      "onlyLoadAppFromAsar": true,
+      "loadBrowserProcessSpecificV8Snapshot": false,
+      "grantFileProtocolExtraPrivileges": false,
+      "resetAdHocDarwinSignature": true
+    },
+    "productName": "Looper",
+    "directories": {
+      "output": "release"
+    },
+    "electronLanguages": [
+      "en"
+    ],
+    "files": [
+      "out/**/*",
+      "package.json"
+    ],
+    "mac": {
+      "artifactName": "${productName}-${version}-macOS-${arch}.${ext}",
+      "category": "public.app-category.productivity",
+      "entitlements": "build/entitlements.mac.plist",
+      "entitlementsInherit": "build/entitlements.mac.inherit.plist",
+      "hardenedRuntime": true,
+      "icon": "build/icon.icon",
+      "minimumSystemVersion": "13.0",
+      "extendInfo": {
+        "NSAppTransportSecurity": {
+          "NSAllowsArbitraryLoads": false
+        }
+      },
+      "target": [
+        "dmg",
+        "zip"
+      ]
+    },
+    "win": {
+      "artifactName": "${productName}-${version}-Windows-${arch}.${ext}",
+      "icon": "build/icon.ico",
+      "target": [
+        "nsis",
+        "zip"
+      ]
+    },
+    "nsis": {
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "oneClick": false,
+      "perMachine": false
+    }
+  }
+}

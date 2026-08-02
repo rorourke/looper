@@ -1,0 +1,605 @@
+.account-dialog {
+  --account-dialog-progress: 0;
+  --account-dialog-text: var(--menu-text, rgba(255, 255, 255, 0.92));
+  --account-dialog-strong-text: var(--menu-text, rgba(255, 255, 255, 0.94));
+  --account-dialog-secondary-text: var(
+    --menu-secondary-text,
+    rgba(255, 255, 255, 0.5)
+  );
+  --account-dialog-action-background: #ffffff;
+  --account-dialog-action-hover-background: #f0f0f2;
+  --account-dialog-action-pressed-background: #dedee2;
+  --account-dialog-action-text: #111114;
+  --account-dialog-field-background: rgba(255, 255, 255, 0.08);
+  --account-dialog-field-hover-background: rgba(255, 255, 255, 0.11);
+  --account-dialog-field-focus-background: rgba(255, 255, 255, 0.08);
+  --account-dialog-field-focus-shadow: none;
+  --account-dialog-placeholder-opacity: 0.76;
+  --account-dialog-accent: var(--menu-check, #4b9cff);
+  --account-dialog-error-background: #b3263a;
+  --account-dialog-error-hover-background: rgba(255, 255, 255, 0.16);
+  --account-dialog-error-text: #ffffff;
+  --account-dialog-status-text: color-mix(
+    in srgb,
+    #59cc7b 80%,
+    var(--menu-text, #ffffff)
+  );
+  --account-dialog-focus-ring: var(--account-dialog-accent);
+  --account-dialog-focus-ring-width: 2px;
+  --account-dialog-code-cell-background: rgba(255, 255, 255, 0.08);
+  --account-dialog-code-cell-active-background: rgba(255, 255, 255, 0.13);
+  --account-dialog-code-cell-active-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.2);
+  --account-dialog-code-cell-focus-shadow:
+    inset 0 0 0 2px color-mix(
+      in srgb,
+      var(--account-dialog-accent) 76%,
+      transparent
+    );
+
+  width: min(520px, calc(100vw - 64px));
+  max-width: none;
+  max-height: calc(100vh - 36px);
+  padding: 0;
+  overflow: visible;
+  border: 0;
+  outline: none;
+  color: var(--account-dialog-text);
+  background: transparent;
+  font-family: var(
+    --font-system,
+    -apple-system,
+    BlinkMacSystemFont,
+    "SF Pro Text",
+    "Helvetica Neue",
+    Arial,
+    sans-serif
+  );
+  -webkit-font-smoothing: antialiased;
+}
+
+:root[data-theme="light"] .account-dialog {
+  --account-dialog-text: rgba(0, 0, 0, 0.88);
+  --account-dialog-strong-text: rgba(0, 0, 0, 0.92);
+  --account-dialog-secondary-text: rgba(0, 0, 0, 0.58);
+  --account-dialog-action-background: #111114;
+  --account-dialog-action-hover-background: #28282d;
+  --account-dialog-action-pressed-background: #3d3d43;
+  --account-dialog-action-text: #ffffff;
+  --account-dialog-field-background: rgba(0, 0, 0, 0.055);
+  --account-dialog-field-hover-background: rgba(0, 0, 0, 0.08);
+  --account-dialog-field-focus-background: rgba(0, 0, 0, 0.055);
+  --account-dialog-field-focus-shadow: none;
+  --account-dialog-placeholder-opacity: 1;
+  --account-dialog-accent: var(--menu-check, #0a64d8);
+  --account-dialog-error-background: #b3263a;
+  --account-dialog-error-hover-background: rgba(255, 255, 255, 0.16);
+  --account-dialog-error-text: #ffffff;
+  --account-dialog-status-text: #14733d;
+  --account-dialog-focus-ring: var(--account-dialog-accent);
+  --account-dialog-focus-ring-width: 2px;
+  --account-dialog-code-cell-background: rgba(0, 0, 0, 0.055);
+  --account-dialog-code-cell-active-background: rgba(0, 0, 0, 0.085);
+  --account-dialog-code-cell-active-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.16);
+  --account-dialog-code-cell-focus-shadow:
+    inset 0 0 0 2px color-mix(
+      in srgb,
+      var(--account-dialog-accent) 76%,
+      transparent
+    );
+}
+
+.account-dialog::backdrop {
+  background: rgba(5, 5, 8, 0.58);
+  backdrop-filter: blur(18px) saturate(0.78);
+  opacity: var(--account-dialog-progress, 1);
+  -webkit-backdrop-filter: blur(18px) saturate(0.78);
+}
+
+:root[data-theme="light"] .account-dialog::backdrop {
+  background: rgba(248, 248, 251, 0.82);
+  backdrop-filter: blur(18px) saturate(0.72);
+  -webkit-backdrop-filter: blur(18px) saturate(0.72);
+}
+
+.account-dialog-web-scrim {
+  display: none;
+}
+
+.account-dialog-content {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  max-height: calc(100vh - 36px);
+  overflow: visible;
+  padding: 0;
+  flex-direction: column;
+  align-items: center;
+  transform-origin: center;
+  -webkit-app-region: no-drag;
+}
+
+.account-dialog-close.titlebar-icon-button,
+.account-dialog-email-back-button.titlebar-icon-button {
+  position: fixed;
+  top: var(--titlebar-control-inset, 9px);
+  z-index: 100;
+  border: 0;
+  color: var(--library-sign-in-text);
+  background: var(--library-sign-in-bg);
+  box-shadow: var(--library-sign-in-shadow);
+  opacity: var(--account-dialog-progress);
+  pointer-events: auto;
+  transition:
+    background 140ms ease,
+    box-shadow 140ms ease,
+    transform 100ms ease;
+  -webkit-app-region: no-drag;
+}
+
+.account-dialog-close.titlebar-icon-button:hover,
+.account-dialog-email-back-button.titlebar-icon-button:hover {
+  color: var(--library-sign-in-text);
+  background: var(--library-sign-in-bg-hover);
+  box-shadow: var(--library-sign-in-shadow);
+  transform: translateY(-1px);
+}
+
+.account-dialog-close.titlebar-icon-button:active,
+.account-dialog-email-back-button.titlebar-icon-button:active {
+  color: var(--library-sign-in-text);
+  background: var(--library-sign-in-bg-pressed);
+  transform: scale(0.985);
+}
+
+.account-dialog-close {
+  right: var(--titlebar-control-inset, 9px);
+}
+
+.account-dialog-email-back-button {
+  left: var(--titlebar-left-inset, 96px);
+}
+
+.account-dialog-close:disabled,
+.account-dialog-email-back-button:disabled {
+  opacity: 0.45;
+  pointer-events: none;
+}
+
+.account-dialog-title {
+  margin: 0;
+  color: var(--account-dialog-strong-text);
+  font-size: 30px;
+  font-weight: 660;
+  letter-spacing: -0.035em;
+  line-height: 1.1;
+  text-align: center;
+}
+
+.account-dialog-step {
+  width: 100%;
+}
+
+.account-dialog-form {
+  display: flex;
+  width: 100%;
+  margin-top: 28px;
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.account-dialog-form.code-step {
+  margin-top: 28px;
+}
+
+.account-dialog-email-field,
+.account-dialog-form > input {
+  width: 100%;
+  height: 58px;
+  border: 0;
+  border-radius: 999px;
+  outline: none;
+  color: var(--account-dialog-strong-text);
+  background: var(--account-dialog-field-background);
+  font-family: inherit;
+  font-size: 15px;
+  transition:
+    background 140ms ease,
+    opacity 140ms ease;
+}
+
+:root[data-theme="light"] .account-dialog-email-field,
+:root[data-theme="light"] .account-dialog-form > input {
+  transition:
+    background 140ms ease,
+    box-shadow 140ms ease,
+    opacity 140ms ease;
+}
+
+.account-dialog-form > input {
+  padding: 0 17px;
+}
+
+.account-dialog-email-field {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.account-dialog-email-field input {
+  width: 100%;
+  height: 100%;
+  padding: 0 64px 0 26px;
+  border: 0;
+  outline: 0;
+  color: inherit;
+  background: transparent;
+  font: inherit;
+}
+
+.account-dialog-email-field input::placeholder,
+.account-dialog-form > input::placeholder {
+  color: var(--account-dialog-secondary-text);
+  opacity: var(--account-dialog-placeholder-opacity);
+}
+
+.account-dialog-email-field:hover:not(:has(input:disabled)):not(:focus-within),
+.account-dialog-form > input:hover:not(:disabled):not(:focus) {
+  background: var(--account-dialog-field-hover-background);
+}
+
+.account-dialog-email-field:focus-within,
+.account-dialog-form > input:focus {
+  background: var(--account-dialog-field-focus-background);
+  box-shadow: var(--account-dialog-field-focus-shadow);
+  outline: none;
+}
+
+.account-dialog-email-field:has(input:disabled),
+.account-dialog-form > input:disabled {
+  opacity: 0.58;
+}
+
+.account-dialog-email-submit {
+  position: absolute;
+  right: 8px;
+  display: grid;
+  width: 38px;
+  height: 38px;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  color: var(--account-dialog-action-text);
+  background: var(--account-dialog-action-background);
+  cursor: default;
+  transition:
+    background 120ms ease,
+    opacity 120ms ease,
+    transform 90ms ease;
+}
+
+.account-dialog-email-submit:hover:not(:disabled) {
+  background: var(--account-dialog-action-hover-background);
+}
+
+.account-dialog-email-submit:active:not(:disabled) {
+  background: var(--account-dialog-action-pressed-background);
+  transform: scale(0.95);
+}
+
+.account-dialog-email-submit:disabled {
+  opacity: 0.5;
+}
+
+.account-dialog-email-submit svg {
+  width: 18px;
+  height: 18px;
+  stroke-width: 2;
+}
+
+.account-dialog-status {
+  margin: 10px 2px 0;
+  overflow-wrap: anywhere;
+  font-size: 12px;
+  line-height: 1.42;
+}
+
+.account-dialog-error {
+  position: fixed;
+  bottom: max(16px, env(safe-area-inset-bottom));
+  left: 50%;
+  z-index: 110;
+  display: inline-flex;
+  width: max-content;
+  max-width: calc(100vw - 32px);
+  min-height: 36px;
+  align-items: center;
+  padding: 6px 8px 6px 13px;
+  gap: 10px;
+  border: 0;
+  border-radius: 999px;
+  color: var(--account-dialog-error-text);
+  background: var(--account-dialog-error-background);
+  box-shadow: 0 6px 22px rgba(72, 10, 20, 0.18);
+  font-size: 12px;
+  font-weight: 520;
+  line-height: 1.35;
+  opacity: var(--account-dialog-progress);
+  transform: translateX(-50%);
+  -webkit-app-region: no-drag;
+}
+
+.account-dialog-error span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.account-dialog-error button {
+  min-height: 24px;
+  flex: 0 0 auto;
+  padding: 0 8px;
+  border: 0;
+  border-radius: 999px;
+  color: inherit;
+  background: transparent;
+  font: inherit;
+  font-weight: 650;
+  cursor: default;
+}
+
+.account-dialog-error button:hover:not(:disabled) {
+  background: var(--account-dialog-error-hover-background);
+}
+
+.account-dialog-error button:active:not(:disabled) {
+  background: rgba(255, 255, 255, 0.24);
+}
+
+.account-dialog-error button:disabled {
+  opacity: 0.55;
+}
+
+.account-dialog:has(.account-dialog-error) .account-dialog-code-links {
+  bottom: 64px;
+}
+
+.account-dialog-status {
+  color: var(--account-dialog-status-text);
+  text-align: center;
+}
+
+.account-dialog button:focus-visible {
+  outline: var(--account-dialog-focus-ring-width) solid var(--account-dialog-focus-ring);
+  outline-offset: 2px;
+}
+
+.account-dialog-spinner {
+  width: 17px;
+  height: 17px;
+  animation: account-dialog-spin 750ms linear infinite;
+}
+
+.account-dialog-code-prompt {
+  margin: 12px 2px 0;
+  overflow-wrap: anywhere;
+  color: var(--account-dialog-secondary-text);
+  font-size: 13px;
+  line-height: 1.45;
+  text-align: center;
+}
+
+.account-dialog-code-prompt strong {
+  color: var(--account-dialog-text);
+  font-weight: 580;
+}
+
+.account-dialog-code-cells {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(6, 64px);
+  justify-content: center;
+  gap: 10px;
+  cursor: text;
+}
+
+.account-dialog-code-input {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  border: 0;
+  outline: 0;
+  opacity: 0;
+  cursor: text;
+}
+
+.account-dialog-code-cell {
+  position: relative;
+  display: grid;
+  width: 64px;
+  min-width: 0;
+  height: 64px;
+  place-items: center;
+  border-radius: 12px;
+  color: var(--account-dialog-strong-text);
+  background: var(--account-dialog-code-cell-background);
+  font-family: inherit;
+  font-size: 26px;
+  font-variant-numeric: tabular-nums;
+  font-weight: 620;
+  transition:
+    background 100ms ease,
+    box-shadow 100ms ease,
+    opacity 100ms ease;
+}
+
+.account-dialog-code-cell::after {
+  position: absolute;
+  top: 17px;
+  left: 50%;
+  width: 2px;
+  height: 30px;
+  border-radius: 999px;
+  background: currentColor;
+  content: "";
+  opacity: 0;
+  transform: translateX(-50%);
+}
+
+.account-dialog-code-cell[data-filled="true"]::after {
+  left: calc(50% + 12px);
+}
+
+.account-dialog-code-cells:focus-within .account-dialog-code-cell[data-active="true"]::after,
+.account-dialog-code-cells[data-busy="true"]
+  .account-dialog-code-cell[data-active="true"]::after {
+  animation: account-dialog-caret-blink 1s steps(1, end) infinite;
+}
+
+.account-dialog-code-cell[data-active="true"] {
+  background: var(--account-dialog-code-cell-active-background);
+  box-shadow: var(--account-dialog-code-cell-active-shadow);
+}
+
+.account-dialog-code-cells:focus-within .account-dialog-code-cell[data-active="true"] {
+  box-shadow: var(--account-dialog-code-cell-focus-shadow);
+}
+
+.account-dialog-code-cells[data-busy="true"] .account-dialog-code-cell {
+  opacity: 0.58;
+}
+
+.account-dialog-code-verifying {
+  position: fixed;
+  bottom: 56px;
+  left: 50%;
+  z-index: 100;
+  display: grid;
+  width: 32px;
+  height: 32px;
+  place-items: center;
+  color: var(--account-dialog-secondary-text);
+  opacity: var(--account-dialog-progress);
+  pointer-events: none;
+  transform: translateX(-50%);
+}
+
+.account-dialog-code-links {
+  position: fixed;
+  bottom: max(16px, env(safe-area-inset-bottom));
+  left: 50%;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+  gap: 9px;
+  color: var(--account-dialog-secondary-text);
+  font-size: 13px;
+  opacity: var(--account-dialog-progress);
+  transform: translateX(-50%);
+  -webkit-app-region: no-drag;
+}
+
+.account-dialog-code-links button {
+  display: inline-flex;
+  align-items: center;
+  padding: 0;
+  gap: 4px;
+  border: 0;
+  color: var(--account-dialog-accent);
+  background: transparent;
+  font-family: inherit;
+  font-size: inherit;
+  font-weight: 570;
+  cursor: default;
+}
+
+.account-dialog-code-links button:hover:not(:disabled) {
+  text-decoration: underline;
+}
+
+.account-dialog-code-links button:disabled {
+  opacity: 0.45;
+}
+
+.account-dialog-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  margin: -1px;
+  padding: 0;
+  border: 0;
+  clip: rect(0, 0, 0, 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+@keyframes account-dialog-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes account-dialog-caret-blink {
+  0%,
+  45% {
+    opacity: 1;
+  }
+
+  46%,
+  100% {
+    opacity: 0;
+  }
+}
+
+@media (max-width: 480px) {
+  .account-dialog {
+    width: calc(100vw - 40px);
+    max-height: calc(100vh - 20px);
+  }
+
+  .account-dialog-content {
+    max-height: calc(100vh - 20px);
+  }
+
+  .account-dialog-title {
+    font-size: 27px;
+  }
+
+  .account-dialog-code-cells {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+  }
+
+  .account-dialog-code-cell {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .account-dialog-spinner {
+    animation-duration: 1ms;
+  }
+
+  .account-dialog-code-cells:focus-within
+    .account-dialog-code-cell[data-active="true"]::after,
+  .account-dialog-code-cells[data-busy="true"]
+    .account-dialog-code-cell[data-active="true"]::after {
+    animation: none;
+    opacity: 1;
+  }
+
+  .account-dialog-close,
+  .account-dialog-email-back-button,
+  .account-dialog-email-field,
+  .account-dialog-form > input,
+  .account-dialog-email-submit,
+  .account-dialog-code-cell {
+    transition-duration: 1ms;
+  }
+}

@@ -1,0 +1,30 @@
+.pnpm-store
+.electron-cache
+.electron-builder-cache
+.DS_Store
+
+# Dependencies and build output
+**/node_modules/
+electron/out/
+electron/release/
+web/.next/
+web/out/
+web/coverage/
+**/*.tsbuildinfo
+
+# Local deployment and database state
+.vercel/
+web/.vercel/
+supabase/.branches/
+supabase/.temp/
+
+# Secrets stay local. Commit only documented examples.
+.env
+.env.*
+**/.env
+**/.env.*
+!.env.example
+!**/.env.example
+*.p12
+*.pfx
+*.mobileprovision

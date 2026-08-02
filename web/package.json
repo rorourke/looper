@@ -1,0 +1,30 @@
+{
+  "name": "looper-web",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@11.9.0",
+  "scripts": {
+    "dev": "next dev",
+    "test": "node --experimental-transform-types --test lib/*.test.ts",
+    "build": "next build && node ../script/verify_client_artifacts.mjs web",
+    "start": "next start",
+    "typecheck": "tsc --noEmit",
+    "verify:artifacts": "node ../script/verify_client_artifacts.mjs web"
+  },
+  "dependencies": {
+    "lucide-react": "^1.25.0",
+    "next": "16.2.12",
+    "react": "19.2.7",
+    "react-dom": "19.2.7"
+  },
+  "devDependencies": {
+    "@types/node": "^24.10.0",
+    "@types/react": "^19.2.0",
+    "@types/react-dom": "^19.2.0",
+    "typescript": "^5.9.3"
+  },
+  "engines": {
+    "node": ">=20.9.0"
+  }
+}

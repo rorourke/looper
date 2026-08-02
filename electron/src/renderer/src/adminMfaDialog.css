@@ -1,0 +1,203 @@
+.admin-mfa-dialog {
+  --admin-mfa-text: var(--menu-text, rgba(255, 255, 255, 0.92));
+  --admin-mfa-secondary: var(--menu-secondary-text, rgba(255, 255, 255, 0.52));
+  --admin-mfa-surface: var(--menu-surface, #27272a);
+  --admin-mfa-border: var(--menu-border, rgba(255, 255, 255, 0.13));
+  --admin-mfa-field: var(--menu-field-bg, rgba(0, 0, 0, 0.22));
+  --admin-mfa-hover: var(--menu-control-selected-bg, rgba(255, 255, 255, 0.12));
+  --admin-mfa-accent: var(--menu-check, #4b9cff);
+  --admin-mfa-action: var(--library-sign-in-bg, #f5f5f7);
+  --admin-mfa-action-text: var(--library-sign-in-text, #171717);
+  --admin-mfa-danger: var(--destructive-text, #ff6961);
+  width: min(420px, calc(100vw - 32px));
+  max-height: calc(100vh - 32px);
+  padding: 0;
+  overflow: auto;
+  color: var(--admin-mfa-text);
+  background: transparent;
+  border: 0;
+}
+
+.admin-mfa-dialog::backdrop {
+  background: rgba(5, 5, 8, 0.62);
+  backdrop-filter: blur(18px);
+}
+
+:root[data-theme="light"] .admin-mfa-dialog::backdrop {
+  background: rgba(248, 248, 251, 0.82);
+}
+
+.admin-mfa-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 14px;
+  padding: 28px;
+  background: var(--admin-mfa-surface);
+  border: 1px solid var(--admin-mfa-border);
+  border-radius: 18px;
+  box-shadow: 0 24px 70px rgb(0 0 0 / 28%);
+}
+
+.admin-mfa-close {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  display: grid;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  place-items: center;
+  color: var(--admin-mfa-secondary);
+  background: transparent;
+  border: 0;
+  border-radius: 8px;
+}
+
+.admin-mfa-close:hover:not(:disabled) {
+  color: var(--admin-mfa-text);
+  background: var(--admin-mfa-hover);
+}
+
+.admin-mfa-icon {
+  display: grid;
+  width: 44px;
+  height: 44px;
+  place-items: center;
+  color: var(--admin-mfa-accent);
+  background: color-mix(in srgb, var(--admin-mfa-accent) 12%, transparent);
+  border-radius: 13px;
+}
+
+.admin-mfa-eyebrow,
+.admin-mfa-copy,
+.admin-mfa-recovery,
+.admin-mfa-error,
+.admin-mfa-card h2 {
+  margin: 0;
+}
+
+.admin-mfa-eyebrow {
+  color: var(--admin-mfa-accent);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.admin-mfa-card h2 {
+  font-size: 22px;
+  font-weight: 650;
+}
+
+.admin-mfa-copy,
+.admin-mfa-recovery {
+  color: var(--admin-mfa-secondary);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.admin-mfa-loading {
+  display: flex;
+  gap: 9px;
+  align-items: center;
+  color: var(--admin-mfa-secondary);
+  font-size: 13px;
+}
+
+.admin-mfa-spinner {
+  animation: admin-mfa-spin 0.9s linear infinite;
+}
+
+.admin-mfa-enrollment {
+  display: grid;
+  gap: 12px;
+  justify-items: center;
+}
+
+.admin-mfa-qr {
+  padding: 8px;
+  background: #fff;
+  border-radius: 12px;
+}
+
+.admin-mfa-secret {
+  display: grid;
+  width: 100%;
+  gap: 5px;
+  color: var(--admin-mfa-secondary);
+  font-size: 11px;
+}
+
+.admin-mfa-secret code {
+  padding: 9px 10px;
+  overflow-wrap: anywhere;
+  color: var(--admin-mfa-text);
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  background: var(--admin-mfa-field);
+  border: 1px solid var(--admin-mfa-border);
+  border-radius: 9px;
+  user-select: all;
+}
+
+.admin-mfa-form {
+  display: grid;
+  gap: 9px;
+}
+
+.admin-mfa-form label {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  color: var(--admin-mfa-secondary);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.admin-mfa-form input {
+  width: 100%;
+  padding: 12px;
+  color: var(--admin-mfa-text);
+  font: 600 20px/1 ui-monospace, SFMono-Regular, Menlo, monospace;
+  letter-spacing: 0.25em;
+  text-align: center;
+  background: var(--admin-mfa-field);
+  border: 1px solid var(--admin-mfa-border);
+  border-radius: 10px;
+  outline: none;
+}
+
+.admin-mfa-form input:focus {
+  border-color: var(--admin-mfa-accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--admin-mfa-accent) 17%, transparent);
+}
+
+.admin-mfa-form button {
+  min-height: 40px;
+  color: var(--admin-mfa-action-text);
+  font-weight: 650;
+  background: var(--admin-mfa-action);
+  border: 0;
+  border-radius: 10px;
+}
+
+.admin-mfa-form button:disabled {
+  cursor: default;
+  opacity: 0.55;
+}
+
+.admin-mfa-error {
+  padding: 9px 10px;
+  color: var(--admin-mfa-danger);
+  font-size: 12px;
+  background: color-mix(in srgb, var(--admin-mfa-danger) 9%, transparent);
+  border-radius: 9px;
+}
+
+@keyframes admin-mfa-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
