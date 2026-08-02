@@ -8,6 +8,25 @@ Looper is an open-source notebook calculator for Mac and Windows. Write calculat
 
 [Download Looper](https://looper.app/download) · [Report an issue](https://github.com/rorourke/looper/issues)
 
+<p align="center">
+  <img src="docs/screenshots/looper-demo-light.jpg" width="860" alt="Looper's Demo Time library in light mode">
+</p>
+
+<table>
+  <tr>
+    <td width="50%">
+      <img src="docs/screenshots/looper-dark-mode.jpg" alt="A Looper calculation sheet in dark mode">
+    </td>
+    <td width="50%">
+      <img src="docs/screenshots/looper-compound-interest.jpg" alt="Looper's Compound Interest template showing yearly results">
+    </td>
+  </tr>
+  <tr>
+    <td align="center"><sub>Readable calculations in dark mode</sub></td>
+    <td align="center"><sub>Compound Interest over 20 years</sub></td>
+  </tr>
+</table>
+
 ## What it does
 
 - Evaluates arithmetic, named variables, percentages, currencies, SI suffixes, functions, section summaries, and live stock or crypto prices.
