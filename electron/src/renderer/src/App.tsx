@@ -1,5 +1,4 @@
 import {
-  Fragment,
   useCallback,
   useEffect,
   useLayoutEffect,
@@ -1467,16 +1466,8 @@ function MobileMarketingLibrary({
         className="mobile-marketing-concepts"
       >
         <div className="mobile-marketing-concept-list">
-          {libraryConcepts.map((concept, index) => (
-            <Fragment key={concept.id}>
-              {index > 0 ? (
-                <div
-                  aria-hidden="true"
-                  className="library-divider mobile-marketing-concept-divider"
-                />
-              ) : null}
-              <MobileMarketingConcept concept={concept} />
-            </Fragment>
+          {libraryConcepts.map((concept) => (
+            <MobileMarketingConcept concept={concept} key={concept.id} />
           ))}
         </div>
       </section>
