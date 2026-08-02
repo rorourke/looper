@@ -93,7 +93,10 @@ test("keeps the demo library separate, ephemeral, and available to local builds"
   assert.match(app, /actualLibraryDocuments/);
   assert.match(app, /demoLibraryDocuments/);
   assert.match(app, /createDemoTimeLibraryDocuments/);
-  assert.match(app, /if \(demoTimeEnabled\) return;\s*try \{\s*const localDocuments/s);
+  assert.match(
+    app,
+    /if \(publicDemoMode \|\| demoTimeEnabled\) return;\s*try \{\s*const localDocuments/s
+  );
   assert.match(app, /Sharing is disabled in Demo Time/);
   assert.match(app, /Account deletion is disabled in Demo Time/);
   assert.match(main, /isInternalDebugBuild \|\|\s*demoTimeEnabled/);
