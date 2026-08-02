@@ -295,6 +295,29 @@
   min-height: 0;
 }
 
+:root[data-platform="web"] .signed-out-download-app-action,
+:root[data-platform="web"] .library-download-app-button,
+:root[data-platform="web"] .mobile-marketing-download {
+  border-color: transparent;
+  color: var(--library-sign-in-text);
+  background: var(--library-sign-in-bg);
+  box-shadow: var(--library-sign-in-shadow);
+}
+
+:root[data-platform="web"] .signed-out-download-app-action:hover,
+:root[data-platform="web"] .library-download-app-button:hover,
+:root[data-platform="web"] .mobile-marketing-download:hover {
+  border-color: transparent;
+  color: var(--library-sign-in-text);
+  background: var(--library-sign-in-bg-hover);
+}
+
+:root[data-platform="web"] .signed-out-download-app-action:active,
+:root[data-platform="web"] .library-download-app-button:active,
+:root[data-platform="web"] .mobile-marketing-download:active {
+  background: var(--library-sign-in-bg-pressed);
+}
+
 :root[data-platform="web"] .account-dialog {
   inset: 0;
   width: 100vw;
@@ -491,7 +514,6 @@
     height: 100lvh;
     min-width: 0;
     min-height: 0;
-    background: var(--bg-editor-opaque);
   }
 
   :root[data-platform="web"] .looper-shell {
@@ -522,18 +544,6 @@
     :root[data-platform="web"] .looper-shell {
       --mobile-browser-ui-offset: max(0px, calc(100lvh - 100dvh));
     }
-  }
-
-  :root[data-platform="web"] .looper-shell::after {
-    content: "";
-    position: absolute;
-    z-index: 130;
-    top: 0;
-    right: 0;
-    left: 0;
-    height: 0.5px;
-    background: var(--divider-content);
-    pointer-events: none;
   }
 
   :root[data-platform="web"] .looper-shell[data-view-mode="editor"] {
@@ -1088,23 +1098,6 @@
   :root[data-platform="web"] .mobile-marketing-action .ui-icon {
     width: 18px;
     height: 18px;
-  }
-
-  :root[data-platform="web"] .mobile-marketing-download {
-    border-color: transparent;
-    color: var(--library-sign-in-text);
-    background: var(--library-sign-in-bg);
-    box-shadow: var(--library-sign-in-shadow);
-  }
-
-  :root[data-platform="web"] .mobile-marketing-download:hover {
-    border-color: transparent;
-    color: var(--library-sign-in-text);
-    background: var(--library-sign-in-bg-hover);
-  }
-
-  :root[data-platform="web"] .mobile-marketing-download:active {
-    background: var(--library-sign-in-bg-pressed);
   }
 
   :root[data-platform="web"] .mobile-marketing-concepts {

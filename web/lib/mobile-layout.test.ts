@@ -31,9 +31,15 @@ test("turns the mobile library into a full-width marketing page", async () => {
     appCss,
     /\.mobile-marketing-action\s*\{[^}]*display:\s*inline-flex;[^}]*width:\s*auto;[^}]*border-radius:\s*999px;/s
   );
+  const mobileBreakpointIndex = appCss.indexOf("@media (max-width: 767px)");
+  const invertedDownloadIndex = appCss.indexOf(
+    ':root[data-platform="web"] .signed-out-download-app-action'
+  );
+  assert.ok(invertedDownloadIndex >= 0);
+  assert.ok(invertedDownloadIndex < mobileBreakpointIndex);
   assert.match(
     appCss,
-    /\.mobile-marketing-download\s*\{[^}]*border-color:\s*transparent;[^}]*color:\s*var\(--library-sign-in-text\);[^}]*background:\s*var\(--library-sign-in-bg\);[^}]*box-shadow:\s*var\(--library-sign-in-shadow\);/s
+    /\.signed-out-download-app-action,[\s\S]*\.library-download-app-button,[\s\S]*\.mobile-marketing-download\s*\{[^}]*border-color:\s*transparent;[^}]*color:\s*var\(--library-sign-in-text\);[^}]*background:\s*var\(--library-sign-in-bg\);[^}]*box-shadow:\s*var\(--library-sign-in-shadow\);/s
   );
   assert.match(
     appCss,
@@ -83,7 +89,7 @@ test("turns the mobile library into a full-width marketing page", async () => {
   );
 });
 
-test("extends the mobile surface into safe areas with a defined top edge and no library header", async () => {
+test("extends the core mobile surface through the status bar without a header treatment", async () => {
   const [appCss, appLayout, sharedApp] = await Promise.all([
     readFile(appCssUrl, "utf8"),
     readFile(appLayoutUrl, "utf8"),
@@ -91,7 +97,15 @@ test("extends the mobile surface into safe areas with a defined top edge and no 
   ]);
 
   assert.match(appLayout, /viewportFit:\s*"cover"/);
-  assert.match(appCss, /:root\[data-platform="web"\],[^}]*background:\s*var\(--bg-editor-opaque\);/s);
+  const mobileStyles = appCss.slice(
+    appCss.indexOf("@media (max-width: 767px)"),
+    appCss.indexOf("@media (max-width: 767px) and (prefers-reduced-motion: reduce)")
+  );
+  const mobileRootSurface = mobileStyles.match(
+    /:root\[data-platform="web"\],[\s\S]*?:root\[data-platform="web"\] #root\s*\{([^}]*)\}/
+  );
+  assert.ok(mobileRootSurface);
+  assert.doesNotMatch(mobileRootSurface[1], /background:/);
   assert.match(
     appCss,
     /\.looper-shell\[data-view-mode="library"\][\s\S]*> \.native-titlebar\s*\{[^}]*display:\s*none;/s
@@ -100,10 +114,7 @@ test("extends the mobile surface into safe areas with a defined top edge and no 
     appCss,
     /\.looper-shell\[data-view-mode="library"\]::before\s*\{[^}]*content:\s*none;/s
   );
-  assert.match(
-    appCss,
-    /\.looper-shell::after\s*\{[^}]*top:\s*0;[^}]*height:\s*0\.5px;[^}]*background:\s*var\(--divider-content\);/s
-  );
+  assert.doesNotMatch(mobileStyles, /\.looper-shell::after/);
   assert.match(sharedApp, /const handleLibraryScroll = useCallback\(/);
   assert.match(sharedApp, /onScroll=\{handleLibraryScroll\}/);
 });
