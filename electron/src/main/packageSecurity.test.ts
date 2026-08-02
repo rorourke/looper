@@ -118,3 +118,23 @@ test("the macOS installer verifies the downloaded executable architecture with v
     !installerSource.includes('"--test-requirement=\\(requirement)"')
   );
 });
+
+test("the macOS installer tolerates destination-added Finder metadata after strict archive verification", async () => {
+  const installerSource = await readFile(
+    new URL("../../../installer/Sources/InstallerApp.swift", import.meta.url),
+    "utf8"
+  );
+
+  assert.match(
+    installerSource,
+    /verifySignature\(of: appURL, strict: true\)/
+  );
+  assert.match(
+    installerSource,
+    /verifySignature\(of: incoming, strict: false\)/
+  );
+  assert.match(
+    installerSource,
+    /if strict \{\s*verificationArguments\.insert\("--strict", at: 2\)/
+  );
+});
