@@ -71,3 +71,19 @@ test("does not ship retired browser interfaces", async () => {
     await assert.rejects(access(new URL(route, appRoot)));
   }
 });
+
+test("retires the legacy web app worker and its cached main menu", async () => {
+  const worker = await readFile(
+    new URL("../public/looper-sw.js", import.meta.url),
+    "utf8"
+  );
+
+  assert.match(worker, /legacyCachePrefix = "looper-app-shell-"/);
+  assert.match(worker, /self\.skipWaiting\(\)/);
+  assert.match(worker, /key\.startsWith\(legacyCachePrefix\)/);
+  assert.match(worker, /caches\.delete\(key\)/);
+  assert.match(worker, /self\.clients\.claim\(\)/);
+  assert.match(worker, /client\.navigate\(client\.url\)/);
+  assert.match(worker, /self\.registration\.unregister\(\)/);
+  assert.doesNotMatch(worker, /addEventListener\("fetch"/);
+});
