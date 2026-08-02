@@ -4,10 +4,19 @@ import test from "node:test";
 
 const appCssUrl = new URL("../app/globals.css", import.meta.url);
 const appLayoutUrl = new URL("../app/layout.tsx", import.meta.url);
+const vercelIgnoreUrl = new URL("../../.vercelignore", import.meta.url);
 const sharedAppUrl = new URL(
   "../../electron/src/renderer/src/App.tsx",
   import.meta.url
 );
+
+test("keeps the client artifact verifier in Vercel uploads", async () => {
+  const vercelIgnore = await readFile(vercelIgnoreUrl, "utf8");
+
+  assert.match(vercelIgnore, /^script\/\*$/m);
+  assert.match(vercelIgnore, /^!script\/verify_client_artifacts\.mjs$/m);
+  assert.doesNotMatch(vercelIgnore, /^script\/$/m);
+});
 
 test("turns the mobile library into a full-width marketing page", async () => {
   const [appCss, sharedApp] = await Promise.all([
@@ -64,12 +73,17 @@ test("turns the mobile library into a full-width marketing page", async () => {
   assert.match(sharedApp, /https:\/\/github\.com\/rorourke\/looper/);
   assert.match(sharedApp, /function PublicWebsiteFooter\(\): ReactElement/);
   assert.match(sharedApp, /const looperCreatorUrl = "https:\/\/rourkery\.com\/"/);
-  assert.match(sharedApp, /<span>Created by<\/span>/);
+  assert.match(sharedApp, /Created by\{" "\}/);
   assert.match(
     sharedApp,
     /href=\{looperCreatorUrl\}[\s\S]*Ryan O&apos;Rourke/
   );
-  assert.match(sharedApp, /<span aria-hidden="true">•<\/span>/);
+  assert.match(sharedApp, /<span aria-hidden="true">·<\/span>/);
+  assert.match(sharedApp, />\s*View Source\s*<\/a>/);
+  assert.match(
+    sharedApp,
+    /className="public-website-footer-divider" role="separator"/
+  );
   assert.doesNotMatch(sharedApp, /© \{currentYear\}|Ryan Rorke/);
   assert.match(
     sharedApp,
@@ -93,7 +107,27 @@ test("turns the mobile library into a full-width marketing page", async () => {
   );
   assert.match(
     appCss,
-    /\.public-website-footer-content\s*\{[^}]*display:\s*flex;[^}]*flex-wrap:\s*wrap;[^}]*padding-top:\s*24px;[^}]*border-top:\s*1px solid var\(--divider-content\);/s
+    /\.public-website-footer-divider\s*\{[^}]*height:\s*9px;[^}]*margin-bottom:\s*24px;[^}]*mask-image:\s*url\("data:image\/svg\+xml,[^"]*M0 4\.5C4 0\.5 8 0\.5 12 4\.5s8 4 12 0[^"]*"\);[^}]*mask-repeat:\s*repeat-x;[^}]*mask-size:\s*22px 9px;[^}]*-webkit-mask-image:/s
+  );
+  assert.match(
+    appCss,
+    /\.public-website-footer-content\s*\{[^}]*display:\s*flex;[^}]*flex-wrap:\s*wrap;[^}]*gap:\s*4px 9px;/s
+  );
+  assert.match(
+    appCss,
+    /@media \(min-width:\s*768px\)\s*\{[^}]*\.document-library\.public-demo-library\s*\{[^}]*padding-bottom:\s*24px;/s
+  );
+  assert.match(
+    appCss,
+    /@media \(max-width:\s*767px\)[\s\S]*?\.public-website-footer-divider\s*\{[^}]*display:\s*none;[\s\S]*?\.public-website-footer-content\s*\{[^}]*justify-content:\s*center;[^}]*text-align:\s*center;/
+  );
+  assert.match(
+    appCss,
+    /\.public-website-footer a\s*\{[^}]*(?:color-mix)[^}]*transition:\s*color 140ms ease;/s
+  );
+  assert.doesNotMatch(
+    appCss,
+    /\.public-website-footer a(?:\:hover)?\s*\{[^}]*(?:background|border-radius):/s
   );
   const mobileMarketingLibrary = sharedApp.slice(
     sharedApp.indexOf("function MobileMarketingLibrary"),

@@ -1479,14 +1479,17 @@ function MobileMarketingLibrary({
 function PublicWebsiteFooter(): ReactElement {
   return (
     <footer className="public-website-footer">
+      <div className="public-website-footer-divider" role="separator" />
       <div className="public-website-footer-content">
-        <span>Created by</span>
-        <a href={looperCreatorUrl} rel="noreferrer" target="_blank">
-          Ryan O&apos;Rourke
-        </a>
-        <span aria-hidden="true">•</span>
+        <span>
+          Created by{" "}
+          <a href={looperCreatorUrl} rel="noreferrer" target="_blank">
+            Ryan O&apos;Rourke
+          </a>
+        </span>
+        <span aria-hidden="true">·</span>
         <a href={looperSourceUrl} rel="noreferrer" target="_blank">
-          View source
+          View Source
         </a>
       </div>
     </footer>
@@ -8990,7 +8993,7 @@ export function App({ configuration }: AppProps = {}): ReactElement {
 
       {viewMode === "library" ? (
         <section
-          className="document-library scrollbar-on-scroll"
+          className={`document-library scrollbar-on-scroll${publicDemoMode ? " public-demo-library" : ""}`}
           aria-label="All documents"
           onScroll={handleLibraryScroll}
           ref={libraryScrollRef}

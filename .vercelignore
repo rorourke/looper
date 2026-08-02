@@ -9,7 +9,8 @@ electron/node_modules/
 electron/out/
 electron/release/
 electron/scripts/
-script/
+script/*
+!script/verify_client_artifacts.mjs
 AGENTS.md
 RUNNING.md
 
