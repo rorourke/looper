@@ -432,7 +432,7 @@ function importedImageSource(value: string | { src: string }): string {
 
 const looperIconSource = importedImageSource(looperIcon);
 const looperSourceUrl = "https://github.com/rorourke/looper";
-const looperCreatorUrl = "https://rorkery.com/";
+const looperCreatorUrl = "https://rourkery.com/";
 
 function fileName(path?: string): string {
   if (!path) return "Untitled.loop";
@@ -1477,16 +1477,14 @@ function MobileMarketingLibrary({
 }
 
 function PublicWebsiteFooter(): ReactElement {
-  const currentYear = new Date().getFullYear();
-
   return (
     <footer className="public-website-footer">
       <div className="public-website-footer-content">
-        <span>© {currentYear}</span>
+        <span>Created by</span>
         <a href={looperCreatorUrl} rel="noreferrer" target="_blank">
-          Ryan Rorke
+          Ryan O&apos;Rourke
         </a>
-        <span aria-hidden="true">·</span>
+        <span aria-hidden="true">•</span>
         <a href={looperSourceUrl} rel="noreferrer" target="_blank">
           View source
         </a>
