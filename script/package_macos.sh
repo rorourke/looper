@@ -72,8 +72,9 @@ require_release_environment() {
 
 verify_release_debug_build_is_disabled() {
   local compiled_main="$APP_DIR/out/main/index.js"
-  local enabled_pattern='isInternalDebugBuild[[:space:]]*=[[:space:]]*isDev[[:space:]]*\|\|[[:space:]]*true'
-  local disabled_pattern='isInternalDebugBuild[[:space:]]*=[[:space:]]*isDev[[:space:]]*\|\|[[:space:]]*false'
+  local debug_source='(isDev|devRendererUrl[[:space:]]*!==[[:space:]]*(void[[:space:]]+0|undefined))'
+  local enabled_pattern="isInternalDebugBuild[[:space:]]*=[[:space:]]*$debug_source[[:space:]]*\\|\\|[[:space:]]*true"
+  local disabled_pattern="isInternalDebugBuild[[:space:]]*=[[:space:]]*$debug_source[[:space:]]*\\|\\|[[:space:]]*false"
 
   if [ ! -f "$compiled_main" ]; then
     echo "The compiled Electron main bundle is missing: $compiled_main" >&2
