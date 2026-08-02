@@ -14,7 +14,7 @@ test("uses the marketing header only while the local library has no user sheets"
   );
   assert.match(
     app,
-    /!localOnlyMode && downloadAppButtonIsVisible/
+    /\(publicDemoMode \|\| !localOnlyMode\) && downloadAppButtonIsVisible/
   );
   assert.match(
     app,
@@ -52,7 +52,7 @@ test("keeps the centered Looper settings menu available in local-only mode", asy
 
   assert.match(
     app,
-    /const shouldShowLibrarySettingsControl =\s*localOnlyMode \|\|[\s\S]*presentedAccountState\.status === "authenticated"/
+    /const shouldShowLibrarySettingsControl =\s*!publicDemoMode &&\s*\(localOnlyMode \|\|[\s\S]*presentedAccountState\.status === "authenticated"/
   );
   assert.match(
     app,

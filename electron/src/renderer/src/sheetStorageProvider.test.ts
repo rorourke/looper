@@ -30,14 +30,12 @@ test("promotes local files to the desktop product default", async () => {
   assert.match(app, /userLibraryDocuments\.filter\(\(document\) => Boolean\(document\.local\)\)/);
 });
 
-test("renders a marketing page instead of installing the browser app runtime", async () => {
+test("installs the interactive public demo without a backend runtime", async () => {
   const page = await readFile(webPageUrl, "utf8");
 
-  assert.doesNotMatch(page, /LooperWebApp/);
+  assert.match(page, /LooperWebApp/);
   assert.doesNotMatch(page, /SUPABASE/);
-  assert.match(page, /No account\. No subscription\. Your sheets stay on your computer\./);
-  assert.match(page, /Download Looper/);
-  assert.match(page, /View source/);
+  assert.doesNotMatch(page, /No account\. No subscription\. Your sheets stay on your computer\./);
 });
 
 test("exposes local file controls and safe drag import in the desktop library", async () => {
