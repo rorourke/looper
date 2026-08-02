@@ -36,6 +36,7 @@ fi
 
 seen_arm64=false
 seen_x64=false
+release_team_identifier=""
 for app_bundle in "${app_bundles[@]}"; do
   executable="$app_bundle/Contents/MacOS/Looper"
   info_plist="$app_bundle/Contents/Info.plist"
@@ -61,10 +62,20 @@ for app_bundle in "${app_bundles[@]}"; do
     echo "$app_bundle has an unexpected code-signing identifier." >&2
     exit 1
   fi
-  if ! grep -q "^TeamIdentifier=5ES339A7SN$" <<<"$signing_details"; then
-    echo "$app_bundle is not signed by the expected Looper team." >&2
+  app_team_identifier="$(
+    sed -n 's/^TeamIdentifier=//p' <<<"$signing_details" |
+      head -n 1
+  )"
+  if [[ ! "$app_team_identifier" =~ ^[A-Z0-9]{10}$ ]]; then
+    echo "$app_bundle has no valid signing team identifier." >&2
     exit 1
   fi
+  if [ -n "$release_team_identifier" ] &&
+    [ "$release_team_identifier" != "$app_team_identifier" ]; then
+    echo "Packaged Looper apps are signed by different teams." >&2
+    exit 1
+  fi
+  release_team_identifier="$app_team_identifier"
   if ! grep -q "flags=.*runtime" <<<"$signing_details"; then
     echo "$app_bundle is missing the hardened runtime signature flag." >&2
     exit 1
@@ -206,8 +217,12 @@ if ! grep -q "^Authority=Developer ID Application:" <<<"$installer_signing_detai
   echo "$installer_app is not signed with a Developer ID Application certificate." >&2
   exit 1
 fi
-if ! grep -q "TeamIdentifier=5ES339A7SN" <<<"$installer_signing_details"; then
-  echo "$installer_app is not signed by the expected Looper team." >&2
+installer_team_identifier="$(
+  sed -n 's/^TeamIdentifier=//p' <<<"$installer_signing_details" |
+    head -n 1
+)"
+if [ "$installer_team_identifier" != "$release_team_identifier" ]; then
+  echo "$installer_app is not signed by the same team as Looper.app." >&2
   exit 1
 fi
 if ! grep -q "flags=.*runtime" <<<"$installer_signing_details"; then

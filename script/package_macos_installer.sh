@@ -6,7 +6,6 @@ ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 SOURCE_DIR="$ROOT_DIR/installer"
 OUTPUT_DIR="${LOOPER_INSTALLER_OUTPUT_DIR:-$ROOT_DIR/electron/release}"
 APP_NAME="Install Looper"
-EXPECTED_TEAM_ID="5ES339A7SN"
 
 case "$MODE" in
   release|unsigned|debug|preview)
@@ -106,6 +105,7 @@ compile_installer() {
     -module-cache-path "$STAGING_DIR/module-cache"
     "$SOURCE_DIR/Sources/InstallerApp.swift"
     -framework AppKit
+    -framework Security
   )
   if [ "$MODE" = "debug" ] || [ "$MODE" = "preview" ]; then
     compile_flags+=(-DDEBUG_INSTALLER)
@@ -154,9 +154,43 @@ assemble_app() {
   chmod 755 "$STAGED_APP/Contents/MacOS/$APP_NAME"
 }
 
+release_team_identifier() {
+  local team_identifier=""
+  local app_bundle
+  local app_team_identifier
+
+  while IFS= read -r -d '' app_bundle; do
+    app_team_identifier="$(
+      codesign -dvvv "$app_bundle" 2>&1 |
+        sed -n 's/^TeamIdentifier=//p' |
+        head -n 1
+    )"
+    if [[ ! "$app_team_identifier" =~ ^[A-Z0-9]{10}$ ]]; then
+      echo "$app_bundle has no valid signing team identifier." >&2
+      exit 1
+    fi
+    if [ -n "$team_identifier" ] &&
+      [ "$team_identifier" != "$app_team_identifier" ]; then
+      echo "Packaged Looper apps are signed by different teams." >&2
+      exit 1
+    fi
+    team_identifier="$app_team_identifier"
+  done < <(
+    find "$OUTPUT_DIR" -maxdepth 3 -type d -name "Looper.app" -print0
+  )
+
+  if [ -z "$team_identifier" ]; then
+    echo "No signed Looper app was found for installer identity selection." >&2
+    exit 1
+  fi
+  printf '%s' "$team_identifier"
+}
+
 find_signing_identity() {
+  local team_identifier
+  team_identifier="$(release_team_identifier)"
   security find-identity -p codesigning -v 2>/dev/null |
-    sed -n "s/.*\"\\(Developer ID Application:.*($EXPECTED_TEAM_ID)\\)\"/\\1/p" |
+    sed -n "s/.*\"\\(Developer ID Application:.*($team_identifier)\\)\"/\\1/p" |
     head -n 1
 }
 
@@ -165,7 +199,7 @@ sign_app() {
     local signing_identity
     signing_identity="$(find_signing_identity)"
     if [ -z "$signing_identity" ]; then
-      echo "A Developer ID Application certificate for $EXPECTED_TEAM_ID is required." >&2
+      echo "A Developer ID Application certificate matching the signed Looper app is required." >&2
       exit 1
     fi
     codesign --force --deep --options runtime --timestamp \

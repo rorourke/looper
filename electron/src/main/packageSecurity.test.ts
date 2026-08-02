@@ -70,3 +70,31 @@ test("the macOS after-pack hook removes Electron Builder's broad ATS exception",
     await rm(temporaryDirectory, { force: true, recursive: true });
   }
 });
+
+test("macOS releases bind the installer to the app signing team without a hard-coded team", async () => {
+  const [installerSource, packageScript, verificationScript] =
+    await Promise.all([
+      readFile(
+        new URL("../../../installer/Sources/InstallerApp.swift", import.meta.url),
+        "utf8"
+      ),
+      readFile(
+        new URL("../../../script/package_macos_installer.sh", import.meta.url),
+        "utf8"
+      ),
+      readFile(
+        new URL("../../../script/verify_macos_release.sh", import.meta.url),
+        "utf8"
+      )
+    ]);
+
+  for (const source of [installerSource, packageScript, verificationScript]) {
+    assert.doesNotMatch(source, /5ES339A7SN/);
+  }
+  assert.match(installerSource, /kSecCodeInfoTeamIdentifier/);
+  assert.match(packageScript, /release_team_identifier/);
+  assert.match(
+    verificationScript,
+    /installer_team_identifier[\s\S]*release_team_identifier/
+  );
+});

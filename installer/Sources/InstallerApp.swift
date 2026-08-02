@@ -1,9 +1,9 @@
 import AppKit
 import Foundation
 import QuartzCore
+import Security
 
 private let looperBundleIdentifier = "com.nickbolton.looper.electron"
-private let looperTeamIdentifier = "5ES339A7SN"
 private let maximumManifestSize = 16_384
 private let maximumArchiveSize: Int64 = 1_073_741_824
 private let looperArchitecture: String = {
@@ -518,9 +518,12 @@ private enum LooperInstaller {
       }
     #endif
 
+    guard let teamIdentifier = ownSigningTeamIdentifier() else {
+      throw InstallerError.signatureIsInvalid
+    }
     let requirement = """
       anchor apple generic and identifier "\(looperBundleIdentifier)" \
-      and certificate leaf[subject.OU] = "\(looperTeamIdentifier)"
+      and certificate leaf[subject.OU] = "\(teamIdentifier)"
       """
     try run(
       "/usr/bin/codesign",
@@ -539,6 +542,36 @@ private enum LooperInstaller {
       arguments: ["--assess", "--type", "execute", appURL.path],
       failure: .signatureIsInvalid
     )
+  }
+
+  private static func ownSigningTeamIdentifier() -> String? {
+    var code: SecStaticCode?
+    guard
+      SecStaticCodeCreateWithPath(Bundle.main.bundleURL as CFURL, [], &code)
+        == errSecSuccess,
+      let code
+    else {
+      return nil
+    }
+
+    var signingInformation: CFDictionary?
+    guard
+      SecCodeCopySigningInformation(
+        code,
+        SecCSFlags(rawValue: kSecCSSigningInformation),
+        &signingInformation
+      ) == errSecSuccess,
+      let information = signingInformation as? [String: Any],
+      let teamIdentifier = information[kSecCodeInfoTeamIdentifier as String]
+        as? String,
+      teamIdentifier.range(
+        of: #"^[A-Z0-9]{10}$"#,
+        options: .regularExpression
+      ) != nil
+    else {
+      return nil
+    }
+    return teamIdentifier
   }
 
   private static func run(
