@@ -432,6 +432,7 @@ function importedImageSource(value: string | { src: string }): string {
 
 const looperIconSource = importedImageSource(looperIcon);
 const looperSourceUrl = "https://github.com/rorourke/looper";
+const looperCreatorUrl = "https://rorkery.com/";
 
 function fileName(path?: string): string {
   if (!path) return "Untitled.loop";
@@ -1472,6 +1473,25 @@ function MobileMarketingLibrary({
         </div>
       </section>
     </div>
+  );
+}
+
+function PublicWebsiteFooter(): ReactElement {
+  const currentYear = new Date().getFullYear();
+
+  return (
+    <footer className="public-website-footer">
+      <div className="public-website-footer-content">
+        <span>© {currentYear}</span>
+        <a href={looperCreatorUrl} rel="noreferrer" target="_blank">
+          Ryan Rorke
+        </a>
+        <span aria-hidden="true">·</span>
+        <a href={looperSourceUrl} rel="noreferrer" target="_blank">
+          View source
+        </a>
+      </div>
+    </footer>
   );
 }
 
@@ -9117,6 +9137,7 @@ export function App({ configuration }: AppProps = {}): ReactElement {
           ) : null}
             </>
           )}
+          {publicDemoMode ? <PublicWebsiteFooter /> : null}
         </section>
       ) : (
         <section className={`native-workspace ${isLoopSidebarVisible ? "" : "results-hidden"}`}>
