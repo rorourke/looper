@@ -504,7 +504,7 @@ private enum LooperInstaller {
     }
     try run(
       "/usr/bin/lipo",
-      arguments: ["-verify_arch", looperArchitecture, executableURL.path],
+      arguments: [executableURL.path, "-verify_arch", looperArchitecture],
       failure: .archiveIsInvalid
     )
   }
@@ -532,7 +532,7 @@ private enum LooperInstaller {
         "--deep",
         "--strict",
         "--all-architectures",
-        "--test-requirement=\(requirement)",
+        "-R=\(requirement)",
         appURL.path,
       ],
       failure: .signatureIsInvalid
