@@ -63,8 +63,14 @@ test("turns the mobile library into a full-width marketing page", async () => {
   assert.match(sharedApp, /<span>View Source<\/span>/);
   assert.match(sharedApp, /https:\/\/github\.com\/rorourke\/looper/);
   assert.match(sharedApp, /function PublicWebsiteFooter\(\): ReactElement/);
-  assert.match(sharedApp, /<span>© \{currentYear\}<\/span>/);
-  assert.match(sharedApp, /href=\{looperCreatorUrl\}[\s\S]*Ryan Rorke/);
+  assert.match(sharedApp, /const looperCreatorUrl = "https:\/\/rourkery\.com\/"/);
+  assert.match(sharedApp, /<span>Created by<\/span>/);
+  assert.match(
+    sharedApp,
+    /href=\{looperCreatorUrl\}[\s\S]*Ryan O&apos;Rourke/
+  );
+  assert.match(sharedApp, /<span aria-hidden="true">•<\/span>/);
+  assert.doesNotMatch(sharedApp, /© \{currentYear\}|Ryan Rorke/);
   assert.match(
     sharedApp,
     /\{publicDemoMode \? <PublicWebsiteFooter \/> : null\}\s*<\/section>/
