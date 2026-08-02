@@ -26,10 +26,22 @@ test("keeps the publish arrow visible when hovered in either theme", () => {
   );
 });
 
-test("keeps published results and arrows above the interactive highlight layer", () => {
+test("keeps the caret above published rows without losing interactive tokens", () => {
   assert.match(
     css,
-    /\.editor-highlight-viewport\.has-interactive-tokens\s*\{[^}]*z-index:\s*4/s
+    /\.editor-highlight-viewport\.has-interactive-tokens\s*\{[^}]*z-index:\s*auto/s
+  );
+  assert.doesNotMatch(
+    css,
+    /\.highlight-row\.published-line\s*\{[^}]*z-index:/s
+  );
+  assert.match(
+    css,
+    /\.editor-input\s*\{[^}]*z-index:\s*2/s
+  );
+  assert.match(
+    css,
+    /\.variable-definition,\s*\.global-reference\s*\{[^}]*position:\s*relative;[^}]*z-index:\s*4/s
   );
   assert.match(
     css,

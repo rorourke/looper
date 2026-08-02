@@ -247,6 +247,7 @@ export type AppConfiguration = Readonly<{
   downloadPlatform?: "macos" | "windows";
   editorContentStartsBelowHeader: boolean;
   headerControlSize: HeaderControlSize;
+  libraryIconSource?: string;
   loopSidebarDefaultViewportRatio?: number;
   mobileWebLayout: boolean;
   openAccountDialogOnLaunch?: boolean;
@@ -390,11 +391,19 @@ type GlobalVariableAutocompleteState = {
 const loopPeriodPresets = ["Loop", "Year", "Month", "Week", "Day", "Iteration"] as const;
 const decimalPlaceOptions = [0, 1, 2, 3] as const;
 const defaultDocumentTitle = "Untitled";
-const runtimePlatform = String(window.looper.platform);
-const localDeviceLabel =
-  runtimePlatform === "win32" ? "this PC" : "this Mac";
-const primaryShortcutPrefix =
-  runtimePlatform === "darwin" ? "⌘" : "Ctrl+";
+
+function currentRuntimePlatform(): string {
+  return String(window.looper.platform);
+}
+
+function currentLocalDeviceLabel(): string {
+  return currentRuntimePlatform() === "win32" ? "this PC" : "this Mac";
+}
+
+function currentPrimaryShortcutPrefix(): string {
+  const runtimePlatform = currentRuntimePlatform();
+  return runtimePlatform === "darwin" ? "⌘" : "Ctrl+";
+}
 const appUpdateProgressCircumference = 2 * Math.PI * 9;
 const appUpdatePreviewDurationMs = 2_400;
 const appUpdatePreviewCompletionHoldMs = 650;
@@ -1580,7 +1589,7 @@ function LibraryDocumentCard({
             {documentLineDetail(document.data)}
             {document.cloud || document.demo || isBundledExample
               ? ""
-              : ` · On ${localDeviceLabel}`}
+              : ` · On ${currentLocalDeviceLabel()}`}
           </span>
         </div>
       </button>
@@ -1978,6 +1987,8 @@ function LoopVariablesDrawer({
 }
 
 export function App({ configuration }: AppProps = {}): ReactElement {
+  const runtimePlatform = currentRuntimePlatform();
+  const libraryIconSource = configuration?.libraryIconSource ?? looperIconSource;
   const browserHistoryNavigationEnabled =
     configuration?.browserHistoryNavigation === true &&
     window.looper.platform === "web";
@@ -4692,7 +4703,7 @@ export function App({ configuration }: AppProps = {}): ReactElement {
         decimalPlaces: defaultDecimalPlaces
       },
       successMessage: localOnlyMode
-        ? `New sheet saved on ${localDeviceLabel}`
+        ? `New sheet saved on ${currentLocalDeviceLabel()}`
         : "New sheet saved to your account"
     });
   }, [defaultDecimalPlaces, localOnlyMode, requestOwnedSheet]);
@@ -8850,7 +8861,7 @@ export function App({ configuration }: AppProps = {}): ReactElement {
                         value={librarySearchQuery}
                       />
                       <span className="library-search-shortcut" aria-hidden="true">
-                        {primaryShortcutPrefix}F
+                        {currentPrimaryShortcutPrefix()}F
                       </span>
                     </label>
                     <div
@@ -9001,7 +9012,7 @@ export function App({ configuration }: AppProps = {}): ReactElement {
           {isMobileWebLayout ? (
             <MobileMarketingLibrary
               downloadHref={downloadHref}
-              iconSource={looperIconSource}
+              iconSource={libraryIconSource}
             />
           ) : (
             <>
@@ -9010,7 +9021,7 @@ export function App({ configuration }: AppProps = {}): ReactElement {
             : presentedAccountState.status !== "authenticated") ? (
             <div className="library-header">
               <div className="library-title-group">
-                <img alt="" className="library-hero-icon" draggable={false} src={looperIconSource} />
+                <img alt="" className="library-hero-icon" draggable={false} src={libraryIconSource} />
                 <h1>
                   <strong>Looper</strong>
                   <span>
