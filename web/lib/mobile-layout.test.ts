@@ -25,7 +25,7 @@ test("turns the mobile library into a full-width marketing page", async () => {
   );
   assert.match(
     appCss,
-    /\.mobile-marketing-concept\s*\{[^}]*padding:\s*0;[^}]*border:\s*0;[^}]*border-radius:\s*0;[^}]*background:\s*transparent;[^}]*box-shadow:\s*none;/s
+    /\.mobile-marketing-concept\s*\{[^}]*padding:\s*22px;[^}]*border:\s*1px solid var\(--library-card-border\);[^}]*border-radius:\s*18px;[^}]*background:\s*var\(--library-card-bg\);[^}]*box-shadow:\s*var\(--library-card-shadow\);/s
   );
   assert.match(
     appCss,
@@ -33,7 +33,15 @@ test("turns the mobile library into a full-width marketing page", async () => {
   );
   assert.match(
     appCss,
-    /\.library-divider\.mobile-marketing-concept-divider\s*\{[^}]*width:\s*100%;[^}]*max-width:\s*none;[^}]*margin:\s*28px 0;/s
+    /\.mobile-marketing-download\s*\{[^}]*border-color:\s*transparent;[^}]*color:\s*var\(--library-sign-in-text\);[^}]*background:\s*var\(--library-sign-in-bg\);[^}]*box-shadow:\s*var\(--library-sign-in-shadow\);/s
+  );
+  assert.match(
+    appCss,
+    /\.mobile-marketing-concepts\s*\{[^}]*padding:\s*0;[^}]*margin-top:\s*30px;/s
+  );
+  assert.match(
+    appCss,
+    /\.mobile-marketing-concept-list\s*\{[^}]*grid-template-columns:\s*minmax\(0, 1fr\);[^}]*gap:\s*12px;/s
   );
   assert.match(
     appCss,
@@ -44,8 +52,7 @@ test("turns the mobile library into a full-width marketing page", async () => {
     sharedApp,
     /isMobileWebLayout \? \(\s*<MobileMarketingLibrary[\s\S]*?downloadHref=\{downloadHref\}/s
   );
-  assert.match(sharedApp, /libraryConcepts\.map\(\(concept, index\) =>/);
-  assert.match(sharedApp, /index > 0 \? \([\s\S]*mobile-marketing-concept-divider/);
+  assert.match(sharedApp, /libraryConcepts\.map\(\(concept\) =>/);
   assert.match(sharedApp, /<span>Get Mac App<\/span>/);
   assert.match(sharedApp, /<span>View Source<\/span>/);
   assert.match(sharedApp, /https:\/\/github\.com\/rorourke\/looper/);
@@ -55,7 +62,7 @@ test("turns the mobile library into a full-width marketing page", async () => {
   );
   assert.doesNotMatch(
     mobileMarketingLibrary,
-    /className="library-divider mobile-marketing-divider"/
+    /mobile-marketing-(?:concept-)?divider/
   );
   assert.match(mobileMarketingLibrary, /aria-label="Looper examples"/);
   assert.match(
