@@ -1,22 +1,39 @@
 "use client";
 
-import type { ComponentType } from "react";
 import { useEffect, useLayoutEffect, useState } from "react";
 import { createBrowserLooperApi } from "@/lib/browser-looper-api";
 import { migrateToSystemTheme, resolveWebTheme } from "@/lib/web-theme";
-import type { AppConfiguration } from "../../electron/src/renderer/src/App";
+import looperWebIcon from "../../electron/build/icon.ico";
+import {
+  App as LooperApp,
+  type AppConfiguration
+} from "../../electron/src/renderer/src/App";
 
-type LooperAppComponent = ComponentType<{
-  configuration?: AppConfiguration;
-}>;
+function importedImageSource(value: string | { src: string }): string {
+  return typeof value === "string" ? value : value.src;
+}
+
+const looperWebIconSource = importedImageSource(looperWebIcon);
+
+function WebAppLoadingStatus() {
+  return (
+    <main aria-live="polite" className="web-app-status">
+      <span className="web-app-loading-mark" aria-hidden="true">L</span>
+      <span>Opening Looper…</span>
+    </main>
+  );
+}
 
 export function LooperWebApp() {
-  const [LooperApp, setLooperApp] = useState<LooperAppComponent | null>(null);
-  const [loadError, setLoadError] = useState("");
+  const [clientReady, setClientReady] = useState(false);
 
   useLayoutEffect(() => {
     const root = document.documentElement;
     root.dataset.platform = "web";
+
+    if (!window.looper) {
+      window.looper = createBrowserLooperApi();
+    }
 
     try {
       const theme = migrateToSystemTheme(window.localStorage);
@@ -29,26 +46,8 @@ export function LooperWebApp() {
     } catch {
       // The shared app will still resolve the system theme when storage is unavailable.
     }
-  }, []);
 
-  useEffect(() => {
-    let canceled = false;
-
-    if (!window.looper) {
-      window.looper = createBrowserLooperApi();
-    }
-
-    void import("../../electron/src/renderer/src/App")
-      .then(({ App }) => {
-        if (!canceled) setLooperApp(() => App);
-      })
-      .catch(() => {
-        if (!canceled) setLoadError("Looper could not start. Refresh the page to try again.");
-      });
-
-    return () => {
-      canceled = true;
-    };
+    setClientReady(true);
   }, []);
 
   useEffect(() => {
@@ -145,28 +144,13 @@ export function LooperWebApp() {
     };
   }, []);
 
-  if (loadError) {
-    return (
-      <main className="web-app-status" role="alert">
-        <strong>Looper could not start</strong>
-        <span>{loadError}</span>
-      </main>
-    );
-  }
-
-  if (!LooperApp) {
-    return (
-      <main aria-live="polite" className="web-app-status">
-        <span className="web-app-loading-mark" aria-hidden="true">L</span>
-        <span>Opening Looper…</span>
-      </main>
-    );
-  }
+  if (!clientReady) return <WebAppLoadingStatus />;
 
   const configuration = {
     browserHistoryNavigation: true,
     editorContentStartsBelowHeader: true,
     headerControlSize: "compact",
+    libraryIconSource: looperWebIconSource,
     loopSidebarDefaultViewportRatio: 0.3,
     mobileWebLayout: true,
     publicDemoMode: true,
