@@ -94,7 +94,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) before proposing a substantial change and
 
 ## Author
 
-Looper is designed and built by [Ryan O’Rourke](https://rorkery.com/), a product designer whose portfolio includes SearchGPT, Threads, Instagram, Apple Photos, and the original Looper for Mac. You can reach Ryan at [ryano@hey.com](mailto:ryano@hey.com).
+Ryan is an interaction designer living in Los Angeles. His work can be seen in products from Facebook, Apple, Instagram, and OpenAI. Notably, he spent a decade at Instagram where he helped design the first versions of the reshare, video feeds, stories, close friends, video captions, and was one of the creators of Instagram Threads.
 
 ## License
 
