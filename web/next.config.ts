@@ -2,7 +2,7 @@ import type { NextConfig } from "next";
 import { resolve } from "node:path";
 
 const securityHeaders = [
-  { key: "Content-Security-Policy", value: "default-src 'self'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'; object-src 'none'; img-src 'self' data:; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; connect-src 'self'" },
+  { key: "Content-Security-Policy", value: "default-src 'self'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'; object-src 'none'; img-src 'self' data: blob:; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; connect-src 'self'; worker-src 'self' blob:" },
   { key: "Cross-Origin-Opener-Policy", value: "same-origin" },
   { key: "Cross-Origin-Resource-Policy", value: "same-origin" },
   { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=()" },
@@ -16,7 +16,9 @@ const nextConfig: NextConfig = {
   turbopack: {
     root: resolve(process.cwd(), ".."),
     resolveAlias: {
-      "lucide-react": "./node_modules/lucide-react/dist/esm/lucide-react.mjs"
+      "decimal.js": "./node_modules/decimal.js/decimal.mjs",
+      "lucide-react": "./node_modules/lucide-react/dist/esm/lucide-react.mjs",
+      rebound: "./node_modules/rebound/dist/rebound.js"
     }
   },
   async headers() {

@@ -1,25 +1,30 @@
 import type { Metadata, Viewport } from "next";
 import type { ReactNode } from "react";
-import { looperPublicOrigin } from "../../electron/src/shared/product";
+import "../../electron/src/renderer/src/styles.css";
+import "../../electron/src/renderer/src/accountDialog.css";
 import "./globals.css";
 
 export const metadata: Metadata = {
   applicationName: "Looper",
-  description: "A free, open-source notebook calculator for Mac and Windows. No account, no cloud storage—just local .loop files.",
-  metadataBase: new URL(looperPublicOrigin),
-  title: "Looper — Think in numbers. See what changes."
+  description: "A fast, live calculation sheet for exploring numbers over time.",
+  title: "Looper"
 };
 
 export const viewport: Viewport = {
-  colorScheme: "dark",
+  colorScheme: "dark light",
   viewportFit: "cover",
-  themeColor: "#0b0b0d"
+  themeColor: [
+    { color: "#171717", media: "(prefers-color-scheme: dark)" },
+    { color: "#fcfcfc", media: "(prefers-color-scheme: light)" }
+  ]
 };
 
 export default function RootLayout({ children }: Readonly<{ children: ReactNode }>) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body>
+        <div id="root">{children}</div>
+      </body>
     </html>
   );
 }

@@ -1,4 +1,12 @@
-import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import {
+  Fragment,
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState
+} from "react";
 import { createPortal } from "react-dom";
 import {
   ArrowRight,
@@ -8,6 +16,7 @@ import {
   ChevronLeft,
   ChevronRight,
   CircleAlert,
+  Code2,
   Download,
   Ellipsis,
   FileInput,
@@ -242,6 +251,7 @@ export type AppConfiguration = Readonly<{
   loopSidebarDefaultViewportRatio?: number;
   mobileWebLayout: boolean;
   openAccountDialogOnLaunch?: boolean;
+  publicDemoMode?: boolean;
   sharedSheet?: CloudSheet;
   supportsSystemTheme: boolean;
 }>;
@@ -422,6 +432,7 @@ function importedImageSource(value: string | { src: string }): string {
 }
 
 const looperIconSource = importedImageSource(looperIcon);
+const looperSourceUrl = "https://github.com/rorourke/looper";
 
 function fileName(path?: string): string {
   if (!path) return "Untitled.loop";
@@ -994,7 +1005,8 @@ function restoreBundledExampleDocuments(
 
 function readInitialLibraryState(
   sharedSheet?: CloudSheet,
-  startupView: StartupView = "last-sheet"
+  startupView: StartupView = "last-sheet",
+  publicDemoMode = false
 ): InitialLibraryState {
   if (sharedSheet) {
     const sharedDocument = cloudSheetToLibraryDocument(sharedSheet);
@@ -1005,6 +1017,15 @@ function readInitialLibraryState(
         initialViewMode: "editor"
       };
     }
+  }
+
+  if (publicDemoMode) {
+    const documents = createGettingStartedDocuments();
+    return {
+      activeDocumentId: documents[0]?.id ?? "",
+      documents,
+      initialViewMode: "library"
+    };
   }
 
   let storedTemplateRevision: string | null = null;
@@ -1399,13 +1420,11 @@ function MobileMarketingConcept({
 
 type MobileMarketingLibraryProps = {
   downloadHref: string;
-  downloadLabel: string;
   iconSource: string;
 };
 
 function MobileMarketingLibrary({
   downloadHref,
-  downloadLabel,
   iconSource
 }: MobileMarketingLibraryProps): ReactElement {
   return (
@@ -1419,14 +1438,28 @@ function MobileMarketingLibrary({
         />
         <h1>
           <strong>Looper</strong>
-          <span>{" is an advanced notebook calculator. Use the magic word "}</span>
+          <span>{" is an open source desktop notebook calculator. It uses the magic word "}</span>
           <span className="mobile-marketing-loop">loop</span>
-          <span>{" to see how calculations change over time."}</span>
+          <span>{" to manipulate calculations over time."}</span>
         </h1>
-        <a className="mobile-marketing-download" href={downloadHref}>
-          <UiIcon icon={Download} />
-          <span>{downloadLabel}</span>
-        </a>
+        <div className="mobile-marketing-actions">
+          <a
+            className="mobile-marketing-action mobile-marketing-download"
+            href={downloadHref}
+          >
+            <UiIcon icon={Download} />
+            <span>Get Mac App</span>
+          </a>
+          <a
+            className="mobile-marketing-action mobile-marketing-source"
+            href={looperSourceUrl}
+            rel="noreferrer"
+            target="_blank"
+          >
+            <UiIcon icon={Code2} />
+            <span>View Source</span>
+          </a>
+        </div>
       </section>
 
       <section
@@ -1434,8 +1467,16 @@ function MobileMarketingLibrary({
         className="mobile-marketing-concepts"
       >
         <div className="mobile-marketing-concept-list">
-          {libraryConcepts.map((concept) => (
-            <MobileMarketingConcept concept={concept} key={concept.id} />
+          {libraryConcepts.map((concept, index) => (
+            <Fragment key={concept.id}>
+              {index > 0 ? (
+                <div
+                  aria-hidden="true"
+                  className="library-divider mobile-marketing-concept-divider"
+                />
+              ) : null}
+              <MobileMarketingConcept concept={concept} />
+            </Fragment>
           ))}
         </div>
       </section>
@@ -1445,6 +1486,7 @@ function MobileMarketingLibrary({
 
 type LibraryDocumentCardProps = {
   active: boolean;
+  actionsHidden?: boolean;
   displayTitle?: string;
   document: LibraryDocument;
   menuOpen: boolean;
@@ -1461,6 +1503,7 @@ type LibraryDocumentCardProps = {
 
 function LibraryDocumentCard({
   active,
+  actionsHidden = false,
   displayTitle,
   document,
   menuOpen,
@@ -1504,13 +1547,13 @@ function LibraryDocumentCard({
   }, [isRenaming]);
 
   return (
-    <article className={`document-card ${active ? "active" : ""} ${selected ? "selected" : ""} ${menuOpen ? "menu-open" : ""}`}>
+    <article className={`document-card ${active ? "active" : ""} ${selected ? "selected" : ""} ${menuOpen && !actionsHidden ? "menu-open" : ""}`}>
       <button
         aria-current={active ? "page" : undefined}
-        aria-pressed={selected}
+        aria-pressed={actionsHidden ? undefined : selected}
         className="document-card-open"
         onClick={(event: ReactMouseEvent<HTMLButtonElement>) => {
-          if (event.metaKey || event.ctrlKey) {
+          if (!actionsHidden && (event.metaKey || event.ctrlKey)) {
             onToggleSelection(document.id);
             return;
           }
@@ -1530,7 +1573,8 @@ function LibraryDocumentCard({
         </div>
       </button>
 
-      <div className="library-card-menu-control" ref={menuControlRef}>
+      {!actionsHidden ? (
+        <div className="library-card-menu-control" ref={menuControlRef}>
         <button
           aria-expanded={menuOpen}
           aria-haspopup="menu"
@@ -1634,7 +1678,8 @@ function LibraryDocumentCard({
             </div>
           )
         ) : null}
-      </div>
+        </div>
+      ) : null}
     </article>
   );
 }
@@ -1936,6 +1981,10 @@ export function App({ configuration }: AppProps = {}): ReactElement {
   const mobileWebLayoutEnabled = configuration?.mobileWebLayout ?? false;
   const openAccountDialogOnLaunch =
     configuration?.openAccountDialogOnLaunch === true;
+  const publicDemoMode =
+    configuration?.publicDemoMode === true &&
+    window.looper.platform === "web" &&
+    configuration?.sharedSheet === undefined;
   const initialMobileWebLayout =
     mobileWebLayoutEnabled && window.matchMedia(mobileWebLayoutMediaQuery).matches;
   const supportsSystemTheme = configuration?.supportsSystemTheme ?? false;
@@ -1949,7 +1998,11 @@ export function App({ configuration }: AppProps = {}): ReactElement {
     readStoredStartupView
   );
   const [initialLibraryState] = useState<InitialLibraryState>(() => {
-    const initialState = readInitialLibraryState(sharedSheet, startupView);
+    const initialState = readInitialLibraryState(
+      sharedSheet,
+      startupView,
+      publicDemoMode
+    );
     if (initialMobileWebLayout && !sharedSheet) {
       return { ...initialState, initialViewMode: "library" };
     }
@@ -1993,6 +2046,7 @@ export function App({ configuration }: AppProps = {}): ReactElement {
     : setActualLibraryDocuments;
   const [activeDocumentId, setActiveDocumentId] = useState(initialLibraryState.activeDocumentId);
   const [viewMode, setViewMode] = useState<ViewMode>(initialLibraryState.initialViewMode);
+  const [isLibraryScrolled, setIsLibraryScrolled] = useState(false);
   const [isDirty, setIsDirty] = useState(false);
   const [message, setMessage] = useState("Ready");
   const [theme, setTheme] = useState<AppTheme>(() => readStoredTheme(supportsSystemTheme));
@@ -2046,8 +2100,10 @@ export function App({ configuration }: AppProps = {}): ReactElement {
   const [loadingStockSymbols, setLoadingStockSymbols] = useState<ReadonlySet<string>>(
     () => new Set()
   );
-  const [accountState, setAccountState] = useState<AccountState>(
-    localOnlyMode ? { status: "anonymous" } : { status: "loading" }
+  const [accountState, setAccountState] = useState<AccountState>(() =>
+    publicDemoMode || localOnlyMode
+      ? { status: "anonymous" }
+      : { status: "loading" }
   );
   const [signedOutPreviewEnabled, setSignedOutPreviewEnabled] = useState(false);
   const [billingPreviewMode, setBillingPreviewMode] =
@@ -2063,7 +2119,9 @@ export function App({ configuration }: AppProps = {}): ReactElement {
     useState<AccountDialogPurpose>("sign-in");
   const [isAdminPanelOpen, setIsAdminPanelOpen] = useState(false);
   const [pendingSheetIntent, setPendingSheetIntent] = useState<OwnedSheetIntent>();
-  const [isLoadingSheetStorage, setIsLoadingSheetStorage] = useState(localOnlyMode);
+  const [isLoadingSheetStorage, setIsLoadingSheetStorage] = useState(
+    localOnlyMode && !publicDemoMode
+  );
   const [isCheckingBillingAccess, setIsCheckingBillingAccess] = useState(false);
   const [isCreatingLocalSheet, setIsCreatingLocalSheet] = useState(false);
   const [isCreatingCloudSheet, setIsCreatingCloudSheet] = useState(false);
@@ -2478,6 +2536,7 @@ export function App({ configuration }: AppProps = {}): ReactElement {
   );
   const presentedUserLibraryDocuments = useMemo(
     () => {
+      if (publicDemoMode) return [];
       if (localOnlyMode && !demoTimeEnabled) {
         return sortSheetsByLastModified(
           userLibraryDocuments.filter((document) => Boolean(document.local))
@@ -2500,6 +2559,7 @@ export function App({ configuration }: AppProps = {}): ReactElement {
       accountState.status,
       demoTimeEnabled,
       localOnlyMode,
+      publicDemoMode,
       signedOutPreviewEnabled,
       userLibraryDocuments
     ]
@@ -2622,14 +2682,16 @@ export function App({ configuration }: AppProps = {}): ReactElement {
         )
       : 0;
   const presentedAccountState: AccountState =
-    demoTimeEnabled
-      ? {
-          account: { email: DEMO_ACCOUNT_EMAIL, id: DEMO_ACCOUNT_ID },
-          status: "authenticated"
-        }
-      : signedOutPreviewEnabled && accountState.status === "authenticated"
-        ? { status: "anonymous" }
-        : accountState;
+    publicDemoMode
+      ? { status: "anonymous" }
+      : demoTimeEnabled
+        ? {
+            account: { email: DEMO_ACCOUNT_EMAIL, id: DEMO_ACCOUNT_ID },
+            status: "authenticated"
+          }
+        : signedOutPreviewEnabled && accountState.status === "authenticated"
+          ? { status: "anonymous" }
+          : accountState;
   const presentedAccountEmail =
     presentedAccountState.status === "authenticated"
       ? presentedAccountState.account.email
@@ -2651,9 +2713,10 @@ export function App({ configuration }: AppProps = {}): ReactElement {
   const updateButtonPreviewEnabled =
     appUpdateState.status !== "idle" && appUpdateState.preview;
   const shouldShowLibrarySettingsControl =
-    localOnlyMode ||
-    presentedAccountState.status === "authenticated" ||
-    debugSettingsAreAvailable;
+    !publicDemoMode &&
+    (localOnlyMode ||
+      presentedAccountState.status === "authenticated" ||
+      debugSettingsAreAvailable);
   const downloadAppButtonIsVisible = shouldShowDownloadAppButton({
     alwaysShow: alwaysShowDownloadAppButton,
     runtimePlatform: window.looper.platform
@@ -3107,6 +3170,7 @@ export function App({ configuration }: AppProps = {}): ReactElement {
   const handleLibraryScroll = useCallback(
     (event: ReactUIEvent<HTMLElement>): void => {
       libraryScrollTopRef.current = event.currentTarget.scrollTop;
+      setIsLibraryScrolled(event.currentTarget.scrollTop > 0);
       handleTransientScrollbarScroll(event);
       if (!isMobileWebLayout) return;
 
@@ -6532,7 +6596,7 @@ export function App({ configuration }: AppProps = {}): ReactElement {
   );
 
   useEffect(() => {
-    if (!localOnlyMode) return;
+    if (!localOnlyMode || publicDemoMode) return;
     let canceled = false;
     const loadLocalSheets = (folderChanged = false): void => {
       setIsLoadingSheetStorage(true);
@@ -6599,10 +6663,10 @@ export function App({ configuration }: AppProps = {}): ReactElement {
       canceled = true;
       stopListening();
     };
-  }, [localOnlyMode]);
+  }, [localOnlyMode, publicDemoMode]);
 
   useEffect(() => {
-    if (localOnlyMode) return;
+    if (localOnlyMode || publicDemoMode) return;
     let canceled = false;
 
     void (async () => {
@@ -6668,10 +6732,17 @@ export function App({ configuration }: AppProps = {}): ReactElement {
     return () => {
       canceled = true;
     };
-  }, [activateAccount, loadCloudSheetsForAccount, localOnlyMode, sharedSheet]);
+  }, [
+    activateAccount,
+    loadCloudSheetsForAccount,
+    localOnlyMode,
+    publicDemoMode,
+    sharedSheet
+  ]);
 
   useEffect(() => {
     if (
+      !publicDemoMode &&
       openAccountDialogOnLaunch &&
       accountState.status === "anonymous" &&
       !isSharedAccess &&
@@ -6684,6 +6755,7 @@ export function App({ configuration }: AppProps = {}): ReactElement {
     accountState.status,
     isSharedAccess,
     openAccountDialogOnLaunch,
+    publicDemoMode,
     signedOutPreviewEnabled
   ]);
 
@@ -6799,7 +6871,7 @@ export function App({ configuration }: AppProps = {}): ReactElement {
   }, [viewMode]);
 
   useEffect(() => {
-    if (demoTimeEnabled) return;
+    if (publicDemoMode || demoTimeEnabled) return;
     try {
       const localDocuments = libraryDocuments.filter(
         (document) =>
@@ -6818,7 +6890,13 @@ export function App({ configuration }: AppProps = {}): ReactElement {
     } catch {
       // Local storage can be unavailable in unusual browser contexts.
     }
-  }, [activeDocumentId, demoTimeEnabled, initialLibraryState, libraryDocuments]);
+  }, [
+    activeDocumentId,
+    demoTimeEnabled,
+    initialLibraryState,
+    libraryDocuments,
+    publicDemoMode
+  ]);
 
   useEffect(() => {
     const sharedShareToken = sharedSheet?.shareToken;
@@ -7646,11 +7724,11 @@ export function App({ configuration }: AppProps = {}): ReactElement {
       }
       if (key === "o") {
         event.preventDefault();
-        void openDocument();
+        if (!publicDemoMode) void openDocument();
       }
       if (key === "n") {
         event.preventDefault();
-        newDocument();
+        if (!publicDemoMode) newDocument();
       }
       if (
         key === "b" &&
@@ -7701,6 +7779,7 @@ export function App({ configuration }: AppProps = {}): ReactElement {
     newDocument,
     openDocument,
     presentedAccountState.status,
+    publicDemoMode,
     saveDocument,
     sourceLines,
     toggleLoopedLine,
@@ -7889,6 +7968,7 @@ export function App({ configuration }: AppProps = {}): ReactElement {
   ): ReactElement => (
     <LibraryDocumentCard
       active={false}
+      actionsHidden={publicDemoMode}
       displayTitle={displayTitle}
       document={document}
       key={document.id}
@@ -8004,6 +8084,7 @@ export function App({ configuration }: AppProps = {}): ReactElement {
         isLoopVariablesDrawerResizing ? "loop-variables-drawer-resizing" : ""
       } ${rowDrag ? "row-dragging" : ""}`}
       data-header-control-size={headerControlSize}
+      data-library-scrolled={isLibraryScrolled ? "true" : undefined}
       data-view-mode={viewMode}
       data-window-full-screen={isWindowFullScreen ? "true" : undefined}
       style={shellStyle}
@@ -8046,21 +8127,24 @@ export function App({ configuration }: AppProps = {}): ReactElement {
             ) : null}
             <div className="document-title-control" ref={documentMenuRef}>
               <button
-                aria-expanded={isDocumentMenuOpen}
-                aria-haspopup="menu"
+                aria-expanded={publicDemoMode ? undefined : isDocumentMenuOpen}
+                aria-haspopup={publicDemoMode ? undefined : "menu"}
                 className={`titlebar-pill-button document-title-button ${isDocumentMenuOpen ? "active" : ""}`}
                 onClick={(event) => {
+                  if (publicDemoMode) return;
                   event.stopPropagation();
                   toggleDocumentMenu();
                 }}
-                title="Document options"
+                title={publicDemoMode ? documentTitle : "Document options"}
                 type="button"
               >
                 <span className="document-title-button-label">{documentTitle}</span>
-                <UiIcon className="document-title-chevron" icon={ChevronDown} />
+                {!publicDemoMode ? (
+                  <UiIcon className="document-title-chevron" icon={ChevronDown} />
+                ) : null}
               </button>
 
-              {isDocumentMenuOpen ? (
+              {isDocumentMenuOpen && !publicDemoMode ? (
                 isRenameEditing &&
                 !activeDocumentIsBundledExample &&
                 !activeDocumentIsSharedVisitor ? (
@@ -8792,7 +8876,9 @@ export function App({ configuration }: AppProps = {}): ReactElement {
                 ) : null}
                 </div>
               ) : null}
-              {!localOnlyMode && presentedAccountState.status === "anonymous" ? (
+              {!publicDemoMode &&
+              !localOnlyMode &&
+              presentedAccountState.status === "anonymous" ? (
                 <button
                   aria-label="Sign in to Looper"
                   className="titlebar-pill-button document-title-button library-title-button library-sign-in-button mobile-library-glass-control"
@@ -8900,7 +8986,6 @@ export function App({ configuration }: AppProps = {}): ReactElement {
           {isMobileWebLayout ? (
             <MobileMarketingLibrary
               downloadHref={downloadHref}
-              downloadLabel={downloadAppLabel}
               iconSource={looperIconSource}
             />
           ) : (
@@ -8913,9 +8998,17 @@ export function App({ configuration }: AppProps = {}): ReactElement {
                 <img alt="" className="library-hero-icon" draggable={false} src={looperIconSource} />
                 <h1>
                   <strong>Looper</strong>
-                  <span>{" is an advanced notebook calculator. Use the magic word "}</span>
+                  <span>
+                    {publicDemoMode
+                      ? " is an open source desktop notebook calculator. It uses the magic word "
+                      : " is an advanced notebook calculator. Use the magic word "}
+                  </span>
                   <span className="library-hero-accent">loop</span>
-                  <span>{" to see how calculations change over time."}</span>
+                  <span>
+                    {publicDemoMode
+                      ? " to manipulate calculations over time."
+                      : " to see how calculations change over time."}
+                  </span>
                 </h1>
               </div>
             </div>
@@ -8928,16 +9021,18 @@ export function App({ configuration }: AppProps = {}): ReactElement {
               aria-label="Get started"
               className="signed-out-library-actions"
             >
-              <button
-                className="signed-out-library-action signed-out-create-sheet-action"
-                disabled={areSheetActionsDisabled}
-                onClick={newDocument}
-                type="button"
-              >
-                <UiIcon className="signed-out-library-action-icon" icon={FilePlus} />
-                <span>Create Sheet</span>
-              </button>
-              {!localOnlyMode && downloadAppButtonIsVisible ? (
+              {!publicDemoMode ? (
+                <button
+                  className="signed-out-library-action signed-out-create-sheet-action"
+                  disabled={areSheetActionsDisabled}
+                  onClick={newDocument}
+                  type="button"
+                >
+                  <UiIcon className="signed-out-library-action-icon" icon={FilePlus} />
+                  <span>Create Sheet</span>
+                </button>
+              ) : null}
+              {(publicDemoMode || !localOnlyMode) && downloadAppButtonIsVisible ? (
                 <a
                   className="signed-out-library-action signed-out-download-app-action"
                   href={downloadHref}
@@ -8946,6 +9041,17 @@ export function App({ configuration }: AppProps = {}): ReactElement {
                 >
                   <UiIcon className="signed-out-library-action-icon" icon={Download} />
                   <span>{downloadAppLabel}</span>
+                </a>
+              ) : null}
+              {publicDemoMode ? (
+                <a
+                  className="signed-out-library-action signed-out-view-source-action"
+                  href={looperSourceUrl}
+                  rel="noreferrer"
+                  target="_blank"
+                >
+                  <UiIcon className="signed-out-library-action-icon" icon={Code2} />
+                  <span>View Source</span>
                 </a>
               ) : null}
             </div>
@@ -8959,7 +9065,8 @@ export function App({ configuration }: AppProps = {}): ReactElement {
               aria-label="Your sheets"
               className="document-grid"
             >
-              {localOnlyMode || presentedAccountState.status !== "anonymous"
+              {!publicDemoMode &&
+              (localOnlyMode || presentedAccountState.status !== "anonymous")
                 ? newSheetCard
                 : null}
               {presentedUserLibraryDocuments.map((document) =>

@@ -4,7 +4,7 @@ import test from "node:test";
 
 const appRoot = new URL("../app/", import.meta.url);
 
-test("serves one account-free marketing and download surface", async () => {
+test("serves the account-free interactive Looper demo", async () => {
   const [page, layout, sitemap, robots] = await Promise.all([
     readFile(new URL("page.tsx", appRoot), "utf8"),
     readFile(new URL("layout.tsx", appRoot), "utf8"),
@@ -12,34 +12,13 @@ test("serves one account-free marketing and download surface", async () => {
     readFile(new URL("robots.ts", appRoot), "utf8")
   ]);
 
-  assert.match(page, /Think in numbers/);
-  assert.match(page, /No account\. No subscription/);
-  assert.match(page, /\.loop/);
-  assert.match(page, /Download for Mac/);
-  assert.match(page, /Download for Windows/);
-  assert.match(page, /View source/);
-  assert.match(page, /© \{currentYear\}/);
-  assert.match(page, /Ryan Rorke/);
-  assert.match(page, /looperCreatorUrl/);
-  assert.doesNotMatch(page, /LooperWebApp|SUPABASE|Stripe|Sign In/);
-  assert.match(layout, /open-source notebook calculator/);
-  assert.doesNotMatch(layout, /renderer\/src\/styles\.css|accountDialog\.css/);
+  assert.match(page, /<LooperWebApp \/>/);
+  assert.doesNotMatch(page, /SUPABASE|Stripe|Sign In/);
+  assert.match(layout, /renderer\/src\/styles\.css/);
+  assert.match(layout, /accountDialog\.css/);
+  assert.match(layout, /viewportFit:\s*"cover"/);
   assert.doesNotMatch(sitemap, /privacy|support|terms/);
   assert.match(robots, /disallow: \["\/api\/"\]/);
-});
-
-test("keeps the website footer at the natural bottom of the viewport", async () => {
-  const [page, styles, openSource] = await Promise.all([
-    readFile(new URL("page.tsx", appRoot), "utf8"),
-    readFile(new URL("globals.css", appRoot), "utf8"),
-    readFile(new URL("../../electron/src/shared/openSource.ts", appRoot), "utf8")
-  ]);
-
-  assert.match(page, /<footer className="site-footer">/);
-  assert.match(styles, /\.marketing-site\s*\{[^}]*display:\s*flex;[^}]*min-height:\s*100svh;[^}]*flex-direction:\s*column;/s);
-  assert.match(styles, /\.site-footer\s*\{[^}]*margin:\s*auto auto 0;/s);
-  assert.match(styles, /\.site-footer a:hover\s*\{[^}]*border-radius|\.site-footer a\s*\{[^}]*border-radius:\s*999px;/s);
-  assert.match(openSource, /looperCreatorUrl = "https:\/\/rorkery\.com\/"/);
 });
 
 test("retires account, cloud-sheet, billing, and admin API routes", async () => {
@@ -59,7 +38,7 @@ test("retires account, cloud-sheet, billing, and admin API routes", async () => 
   await access(new URL("download/route.ts", appRoot));
 });
 
-test("does not ship retired browser interfaces", async () => {
+test("does not ship retired private interfaces", async () => {
   for (const route of [
     "admin/page.tsx",
     "billing/complete/page.tsx",
