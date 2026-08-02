@@ -76,6 +76,18 @@ test("turns the mobile library into a full-width marketing page", async () => {
     /\{publicDemoMode \? <PublicWebsiteFooter \/> : null\}\s*<\/section>/
   );
   assert.match(
+    sharedApp,
+    /const shouldShowLibrarySearchControl =\s*!publicDemoMode &&\s*\(localOnlyMode \|\| presentedAccountState\.status === "authenticated"\);/
+  );
+  assert.match(
+    sharedApp,
+    /key === "f" &&\s*!publicDemoMode &&\s*viewMode === "library"/
+  );
+  assert.match(
+    sharedApp,
+    /\{shouldShowLibrarySearchControl \? \(\s*<div className="library-search-control"/
+  );
+  assert.match(
     appCss,
     /\.public-website-footer\s*\{[^}]*width:\s*100%;[^}]*max-width:\s*1120px;[^}]*padding-top:\s*48px;[^}]*margin:\s*auto auto 0;/s
   );

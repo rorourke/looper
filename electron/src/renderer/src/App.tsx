@@ -2726,6 +2726,9 @@ export function App({ configuration }: AppProps = {}): ReactElement {
     (localOnlyMode ||
       presentedAccountState.status === "authenticated" ||
       debugSettingsAreAvailable);
+  const shouldShowLibrarySearchControl =
+    !publicDemoMode &&
+    (localOnlyMode || presentedAccountState.status === "authenticated");
   const downloadAppButtonIsVisible = shouldShowDownloadAppButton({
     alwaysShow: alwaysShowDownloadAppButton,
     runtimePlatform: window.looper.platform
@@ -7768,6 +7771,7 @@ export function App({ configuration }: AppProps = {}): ReactElement {
       }
       if (
         key === "f" &&
+        !publicDemoMode &&
         viewMode === "library" &&
         presentedAccountState.status === "authenticated"
       ) {
@@ -8803,8 +8807,7 @@ export function App({ configuration }: AppProps = {}): ReactElement {
                   <span>{downloadAppLabel}</span>
                 </a>
               ) : null}
-              {localOnlyMode ||
-              presentedAccountState.status === "authenticated" ? (
+              {shouldShowLibrarySearchControl ? (
                 <div className="library-search-control" ref={librarySearchControlRef}>
                 <button
                   aria-expanded={isLibrarySearchOpen}
