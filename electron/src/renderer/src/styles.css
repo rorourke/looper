@@ -3354,12 +3354,11 @@ body:has(.looper-shell[data-view-mode="library"]),
 }
 
 .editor-highlight-viewport.has-interactive-tokens {
-  z-index: 4;
+  z-index: auto;
 }
 
 .highlight-row.published-line {
   position: relative;
-  z-index: 0;
   background: var(--bg-published-editor-line);
 }
 
@@ -4138,6 +4137,12 @@ body:has(.looper-shell[data-view-mode="library"]),
   border-top: 1px solid var(--divider-results);
   font-family: var(--font-system);
   font-variant-numeric: normal;
+}
+
+.variable-definition,
+.global-reference {
+  position: relative;
+  z-index: 4;
 }
 
 .syntax-variable {
