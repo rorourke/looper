@@ -54,7 +54,10 @@ jobs:
             echo "Tag must be a semantic version such as v1.2.3." >&2
             exit 1
           fi
-          pnpm version "$release_version" --no-git-tag-version
+          current_version="$(node -p "require('./package.json').version")"
+          if [[ "$current_version" != "$release_version" ]]; then
+            pnpm version "$release_version" --no-git-tag-version
+          fi
 
       - name: Prepare Apple notarization key
         env:
