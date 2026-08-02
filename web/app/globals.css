@@ -318,6 +318,47 @@
   background: var(--library-sign-in-bg-pressed);
 }
 
+:root[data-platform="web"] .public-website-footer {
+  width: 100%;
+  max-width: 1120px;
+  padding-top: 48px;
+  margin: auto auto 0;
+  color: var(--library-hero-secondary);
+  font-family: var(--font-system);
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+:root[data-platform="web"] .public-website-footer-content {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  padding-top: 24px;
+  border-top: 1px solid var(--divider-content);
+  gap: 4px 9px;
+}
+
+:root[data-platform="web"] .public-website-footer a {
+  padding: 6px 9px;
+  margin: -6px -9px;
+  border-radius: 999px;
+  color: inherit;
+  text-decoration: none;
+  transition:
+    color 140ms ease,
+    background-color 140ms ease;
+}
+
+:root[data-platform="web"] .public-website-footer a:hover {
+  color: var(--text-headerbar-title);
+  background: var(--library-card-bg-hover);
+}
+
+:root[data-platform="web"] .public-website-footer a:focus-visible {
+  outline: 2px solid var(--menu-highlight);
+  outline-offset: 2px;
+}
+
 :root[data-platform="web"] .account-dialog {
   inset: 0;
   width: 100vw;

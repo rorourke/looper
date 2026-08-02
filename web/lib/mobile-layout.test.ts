@@ -62,6 +62,21 @@ test("turns the mobile library into a full-width marketing page", async () => {
   assert.match(sharedApp, /<span>Get Mac App<\/span>/);
   assert.match(sharedApp, /<span>View Source<\/span>/);
   assert.match(sharedApp, /https:\/\/github\.com\/rorourke\/looper/);
+  assert.match(sharedApp, /function PublicWebsiteFooter\(\): ReactElement/);
+  assert.match(sharedApp, /<span>© \{currentYear\}<\/span>/);
+  assert.match(sharedApp, /href=\{looperCreatorUrl\}[\s\S]*Ryan Rorke/);
+  assert.match(
+    sharedApp,
+    /\{publicDemoMode \? <PublicWebsiteFooter \/> : null\}\s*<\/section>/
+  );
+  assert.match(
+    appCss,
+    /\.public-website-footer\s*\{[^}]*width:\s*100%;[^}]*max-width:\s*1120px;[^}]*padding-top:\s*48px;[^}]*margin:\s*auto auto 0;/s
+  );
+  assert.match(
+    appCss,
+    /\.public-website-footer-content\s*\{[^}]*display:\s*flex;[^}]*flex-wrap:\s*wrap;[^}]*padding-top:\s*24px;[^}]*border-top:\s*1px solid var\(--divider-content\);/s
+  );
   const mobileMarketingLibrary = sharedApp.slice(
     sharedApp.indexOf("function MobileMarketingLibrary"),
     sharedApp.indexOf("type LibraryDocumentCardProps")
