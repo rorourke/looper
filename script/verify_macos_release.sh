@@ -194,43 +194,52 @@ if [ "$zip_count" -eq 0 ]; then
   exit 1
 fi
 
+verify_installer_app() {
+  local app_bundle="$1"
+  local architectures
+  local signing_details
+  local team_identifier
+
+  if [ ! -d "$app_bundle" ]; then
+    echo "No packaged Install Looper.app bundle was found at $app_bundle." >&2
+    exit 1
+  fi
+
+  architectures="$(lipo -archs "$app_bundle/Contents/MacOS/Install Looper")"
+  if [ "$architectures" != "x86_64 arm64" ] &&
+    [ "$architectures" != "arm64 x86_64" ]; then
+    echo "Install Looper.app is not universal: $architectures" >&2
+    exit 1
+  fi
+  codesign --verify --deep --strict --verbose=2 "$app_bundle"
+  signing_details="$(codesign -dvvv "$app_bundle" 2>&1)"
+  if ! grep -q "^Authority=Developer ID Application:" <<<"$signing_details"; then
+    echo "$app_bundle is not signed with a Developer ID Application certificate." >&2
+    exit 1
+  fi
+  team_identifier="$(
+    sed -n 's/^TeamIdentifier=//p' <<<"$signing_details" |
+      head -n 1
+  )"
+  if [ "$team_identifier" != "$release_team_identifier" ]; then
+    echo "$app_bundle is not signed by the same team as Looper.app." >&2
+    exit 1
+  fi
+  if ! grep -q "flags=.*runtime" <<<"$signing_details"; then
+    echo "$app_bundle is missing the hardened runtime signature flag." >&2
+    exit 1
+  fi
+  spctl --assess --type execute --verbose=4 "$app_bundle"
+  xcrun stapler validate "$app_bundle"
+}
+
 installer_app="$RELEASE_DIR/installer/Install Looper.app"
-if [ ! -d "$installer_app" ]; then
-  echo "No packaged Install Looper.app bundle was found in $RELEASE_DIR." >&2
-  exit 1
-fi
+verify_installer_app "$installer_app"
 installer_version="$(
   /usr/libexec/PlistBuddy -c "Print :CFBundleShortVersionString" \
     "$installer_app/Contents/Info.plist"
 )"
 installer_dmg="$RELEASE_DIR/Looper-Installer-$installer_version.dmg"
-
-installer_architectures="$(lipo -archs "$installer_app/Contents/MacOS/Install Looper")"
-if [ "$installer_architectures" != "x86_64 arm64" ] &&
-  [ "$installer_architectures" != "arm64 x86_64" ]; then
-  echo "Install Looper.app is not universal: $installer_architectures" >&2
-  exit 1
-fi
-codesign --verify --deep --strict --verbose=2 "$installer_app"
-installer_signing_details="$(codesign -dvvv "$installer_app" 2>&1)"
-if ! grep -q "^Authority=Developer ID Application:" <<<"$installer_signing_details"; then
-  echo "$installer_app is not signed with a Developer ID Application certificate." >&2
-  exit 1
-fi
-installer_team_identifier="$(
-  sed -n 's/^TeamIdentifier=//p' <<<"$installer_signing_details" |
-    head -n 1
-)"
-if [ "$installer_team_identifier" != "$release_team_identifier" ]; then
-  echo "$installer_app is not signed by the same team as Looper.app." >&2
-  exit 1
-fi
-if ! grep -q "flags=.*runtime" <<<"$installer_signing_details"; then
-  echo "$installer_app is missing the hardened runtime signature flag." >&2
-  exit 1
-fi
-spctl --assess --type execute --verbose=4 "$installer_app"
-xcrun stapler validate "$installer_app"
 
 if [ ! -f "$installer_dmg" ]; then
   echo "No Looper installer DMG was produced." >&2
@@ -238,5 +247,37 @@ if [ ! -f "$installer_dmg" ]; then
 fi
 hdiutil verify "$installer_dmg"
 xcrun stapler validate "$installer_dmg"
+
+installer_mount_root="${TMPDIR:-/tmp}"
+installer_mount_root="${installer_mount_root%/}"
+installer_mount_dir=""
+cleanup_installer_mount() {
+  if [ -z "$installer_mount_dir" ]; then
+    return
+  fi
+  if mount | grep -F " on $installer_mount_dir " >/dev/null; then
+    hdiutil detach "$installer_mount_dir" >/dev/null || true
+  fi
+  case "$installer_mount_dir" in
+    "$installer_mount_root"/looper-installer-verify.*)
+      rm -rf "$installer_mount_dir"
+      ;;
+    *)
+      echo "Refusing to clean unexpected mount directory: $installer_mount_dir" >&2
+      ;;
+  esac
+}
+trap cleanup_installer_mount EXIT
+
+installer_mount_dir="$(
+  mktemp -d "$installer_mount_root/looper-installer-verify.XXXXXX"
+)"
+hdiutil attach -readonly -nobrowse \
+  -mountpoint "$installer_mount_dir" "$installer_dmg" >/dev/null
+verify_installer_app "$installer_mount_dir/Install Looper.app"
+hdiutil detach "$installer_mount_dir" >/dev/null
+rmdir "$installer_mount_dir"
+installer_mount_dir=""
+trap - EXIT
 
 echo "Verified signed, hardened, notarized app, updater, and installer artifacts in $RELEASE_DIR"
