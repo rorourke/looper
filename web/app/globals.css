@@ -1090,36 +1090,42 @@
     height: 18px;
   }
 
-  :root[data-platform="web"] .mobile-marketing-concepts {
-    padding: 0;
+  :root[data-platform="web"] .mobile-marketing-download {
+    border-color: transparent;
+    color: var(--library-sign-in-text);
+    background: var(--library-sign-in-bg);
+    box-shadow: var(--library-sign-in-shadow);
   }
 
-  :root[data-platform="web"]
-    .library-divider.mobile-marketing-divider {
-    margin: 30px 0 24px;
+  :root[data-platform="web"] .mobile-marketing-download:hover {
+    border-color: transparent;
+    color: var(--library-sign-in-text);
+    background: var(--library-sign-in-bg-hover);
+  }
+
+  :root[data-platform="web"] .mobile-marketing-download:active {
+    background: var(--library-sign-in-bg-pressed);
+  }
+
+  :root[data-platform="web"] .mobile-marketing-concepts {
+    padding: 0;
+    margin-top: 30px;
   }
 
   :root[data-platform="web"] .mobile-marketing-concept-list {
     display: grid;
     grid-template-columns: minmax(0, 1fr);
-    gap: 0;
+    gap: 12px;
   }
 
   :root[data-platform="web"] .mobile-marketing-concept {
     min-width: 0;
     overflow: hidden;
-    padding: 0;
-    border: 0;
-    border-radius: 0;
-    background: transparent;
-    box-shadow: none;
-  }
-
-  :root[data-platform="web"]
-    .library-divider.mobile-marketing-concept-divider {
-    width: 100%;
-    max-width: none;
-    margin: 28px 0;
+    padding: 22px;
+    border: 1px solid var(--library-card-border);
+    border-radius: 18px;
+    background: var(--library-card-bg);
+    box-shadow: var(--library-card-shadow);
   }
 
   :root[data-platform="web"] .mobile-marketing-concept header {
