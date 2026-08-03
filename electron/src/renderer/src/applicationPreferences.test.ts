@@ -4,6 +4,7 @@ import test from "node:test";
 import {
   nextApplicationTheme,
   parseDefaultDecimalPlaces,
+  parseShowGettingStartedFiles,
   parseStartupView
 } from "./applicationPreferences.ts";
 
@@ -23,6 +24,13 @@ test("parses the preferred startup view", () => {
   assert.equal(parseStartupView("library"), "library");
   assert.equal(parseStartupView("last-sheet"), "last-sheet");
   assert.equal(parseStartupView("editor"), "last-sheet");
+});
+
+test("shows Getting Started files by default and remembers when they are hidden", () => {
+  assert.equal(parseShowGettingStartedFiles(null), true);
+  assert.equal(parseShowGettingStartedFiles("true"), true);
+  assert.equal(parseShowGettingStartedFiles("false"), false);
+  assert.equal(parseShowGettingStartedFiles(false), false);
 });
 
 test("cycles through the available application themes", () => {

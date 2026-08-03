@@ -39,7 +39,6 @@ import {
   isTrustedPackagedRendererDocumentUrl,
   packagedRendererEntryUrl,
   packagedRendererScheme,
-  packagedSettingsRendererEntryUrl,
   resolvePackagedRendererRequestPath,
   resolveDevRendererUrl
 } from "./startupSecurity";
@@ -60,7 +59,6 @@ import {
 import { billingIpcChannels } from "../shared/billing";
 import {
   applicationSettingsIpcChannels,
-  parseApplicationSettingsPreferenceChange,
   parseApplicationSettingsMenuState,
   type ApplicationSettingsCommand,
   type ApplicationSettingsMenuState,
@@ -146,7 +144,6 @@ const { autoUpdater } = electronUpdater;
 const minimumUpdateProgressPresentationMs = 800;
 nativeTheme.themeSource = "system";
 let mainWindow: BrowserWindow | undefined;
-let settingsWindow: BrowserWindow | undefined;
 let cloudAccountService: CloudAccountService | undefined;
 let cloudDraftBoundary: CloudDraftBoundary | undefined;
 let cloudSheetCacheBoundary: CloudSheetCacheBoundary | undefined;
@@ -341,10 +338,10 @@ function normalizeDocumentPayload(raw: string): LooperDocumentData {
 async function openDocument(): Promise<OpenDocumentResult> {
   const focusedWindow = BrowserWindow.getFocusedWindow();
   const options = {
-    title: "Open Looper Document",
+    title: "Open Looper File",
     properties: ["openFile"],
     filters: [
-      { name: "Looper Sheets", extensions: ["loop"] }
+      { name: "Looper Files", extensions: ["loop"] }
     ]
   } satisfies Electron.OpenDialogOptions;
   const result = focusedWindow
@@ -636,10 +633,8 @@ async function selectSheetStorageProvider(
   // Validate the selected folder before making it the active destination.
   await new LocalSheetStore({ directoryPath: localDirectoryPath }).listSheets();
   const settings = await settingsStore.setSettings("local", localDirectoryPath);
-  for (const target of [mainWindow, settingsWindow]) {
-    if (target && !target.isDestroyed()) {
-      target.webContents.send(sheetStorageIpcChannels.settingsChanged, settings);
-    }
+  if (mainWindow && !mainWindow.isDestroyed()) {
+    mainWindow.webContents.send(sheetStorageIpcChannels.settingsChanged, settings);
   }
   return settings;
 }
@@ -648,7 +643,7 @@ async function revealLocalSheetDirectory(): Promise<void> {
   const settings = await getLocalSheetStorageSettings();
   const errorMessage = await shell.openPath(settings.localDirectoryPath!);
   if (errorMessage) {
-    throw new CloudAccountError("The local sheet folder could not be opened.");
+    throw new CloudAccountError("The source folder could not be opened.");
   }
 }
 
@@ -804,19 +799,6 @@ function assertTrustedIpcSender(event: Electron.IpcMainInvokeEvent): void {
   }
 }
 
-function assertTrustedApplicationWindowIpcSender(
-  event: Electron.IpcMainInvokeEvent
-): void {
-  const senderWindow = BrowserWindow.fromWebContents(event.sender);
-  if (
-    (senderWindow !== mainWindow && senderWindow !== settingsWindow) ||
-    event.senderFrame !== event.sender.mainFrame ||
-    !isTrustedRendererUrl(event.senderFrame.url)
-  ) {
-    throw new Error("This request did not come from a Looper application window.");
-  }
-}
-
 function registerTrustedIpcHandler<TArguments extends unknown[], TResult>(
   channel: string,
   handler: (
@@ -826,22 +808,6 @@ function registerTrustedIpcHandler<TArguments extends unknown[], TResult>(
 ): void {
   ipcMain.handle(channel, (event, ...arguments_: unknown[]) => {
     assertTrustedIpcSender(event);
-    return handler(event, ...(arguments_ as TArguments));
-  });
-}
-
-function registerTrustedApplicationWindowIpcHandler<
-  TArguments extends unknown[],
-  TResult
->(
-  channel: string,
-  handler: (
-    event: Electron.IpcMainInvokeEvent,
-    ...arguments_: TArguments
-  ) => TResult | Promise<TResult>
-): void {
-  ipcMain.handle(channel, (event, ...arguments_: unknown[]) => {
-    assertTrustedApplicationWindowIpcSender(event);
     return handler(event, ...(arguments_ as TArguments));
   });
 }
@@ -879,49 +845,6 @@ function isAllowedExternalUrl(value: string): boolean {
 }
 
 function registerIpc(): void {
-  registerTrustedApplicationWindowIpcHandler(
-    applicationSettingsIpcChannels.openWindow,
-    () => openApplicationSettingsWindow()
-  );
-  registerTrustedApplicationWindowIpcHandler(
-    applicationSettingsIpcChannels.getState,
-    () => applicationSettingsMenuState
-  );
-  registerTrustedApplicationWindowIpcHandler(
-    applicationSettingsIpcChannels.preferenceChanged,
-    (_event, value: unknown) => {
-      const change = parseApplicationSettingsPreferenceChange(value);
-      if (!change) throw new Error("Invalid application settings preference.");
-
-      if (change.type === "set-theme") {
-        setApplicationTheme(change.theme);
-      } else if (change.type === "set-default-decimal-places") {
-        applicationSettingsMenuState = {
-          ...applicationSettingsMenuState,
-          defaultDecimalPlaces: change.decimalPlaces
-        };
-        sendApplicationSettingsCommand(change);
-        broadcastApplicationSettingsState();
-      } else {
-        applicationSettingsMenuState = {
-          ...applicationSettingsMenuState,
-          startupView: change.startupView
-        };
-        sendApplicationSettingsCommand(change);
-        broadcastApplicationSettingsState();
-      }
-
-      return applicationSettingsMenuState;
-    }
-  );
-  registerTrustedApplicationWindowIpcHandler(
-    applicationSettingsIpcChannels.requestExportAll,
-    () => {
-      mainWindow?.show();
-      mainWindow?.focus();
-      sendApplicationSettingsCommand({ type: "export-all-sheets" });
-    }
-  );
   registerTrustedIpcHandler(windowStateIpcChannels.getFullScreen, (event) =>
     BrowserWindow.fromWebContents(event.sender)?.isFullScreen() ?? false
   );
@@ -1019,7 +942,6 @@ function registerIpc(): void {
       if (!parsedState) throw new Error("Invalid application settings menu state.");
       const themeChanged = parsedState.theme !== applicationSettingsMenuState.theme;
       applicationSettingsMenuState = parsedState;
-      broadcastApplicationSettingsState();
       if (themeChanged) {
         installApplicationMenu();
       } else {
@@ -1099,21 +1021,21 @@ function registerIpc(): void {
   registerTrustedIpcHandler(cloudIpcChannels.getConfiguration, () =>
     getCloudAccountService().getCloudConfiguration()
   );
-  registerTrustedApplicationWindowIpcHandler(adminIpcChannels.openPanel, () =>
+  registerTrustedIpcHandler(adminIpcChannels.openPanel, () =>
     openAdminPanel()
   );
-  registerTrustedApplicationWindowIpcHandler(
+  registerTrustedIpcHandler(
     adminIpcChannels.getAccess,
     () => refreshVerifiedAdminAccess()
   );
-  registerTrustedApplicationWindowIpcHandler(
+  registerTrustedIpcHandler(
     adminIpcChannels.prepareMfa,
     () => {
       requireAdminMfaStepUp();
       return getCloudAccountService().prepareAdminMfa();
     }
   );
-  registerTrustedApplicationWindowIpcHandler(
+  registerTrustedIpcHandler(
     adminIpcChannels.verifyMfa,
     async (_event, code: unknown) => {
       requireAdminMfaStepUp();
@@ -1126,7 +1048,7 @@ function registerIpc(): void {
       }
     }
   );
-  registerTrustedApplicationWindowIpcHandler(
+  registerTrustedIpcHandler(
     adminIpcChannels.cancelMfa,
     () => getCloudAccountService().cancelAdminMfa()
   );
@@ -1421,15 +1343,6 @@ function sendApplicationSettingsCommand(command: ApplicationSettingsCommand): vo
   mainWindow?.webContents.send(applicationSettingsIpcChannels.command, command);
 }
 
-function broadcastApplicationSettingsState(): void {
-  if (settingsWindow && !settingsWindow.webContents.isDestroyed()) {
-    settingsWindow.webContents.send(
-      applicationSettingsIpcChannels.stateChanged,
-      applicationSettingsMenuState
-    );
-  }
-}
-
 function debugSettingsAreAvailable(): boolean {
   return isInternalDebugBuild || demoTimeEnabled;
 }
@@ -1464,7 +1377,6 @@ function requireAdminMfaStepUp(): void {
 
 function openAdminPanel(): void {
   requireAdminAccess();
-  settingsWindow?.hide();
   mainWindow?.show();
   mainWindow?.focus();
   sendApplicationSettingsCommand({ type: "show-admin-panel" });
@@ -1571,11 +1483,8 @@ function setVerifiedCloudAccount(account: AccountSummary | null): void {
 function setApplicationTheme(theme: ApplicationTheme): void {
   applicationSettingsMenuState = { ...applicationSettingsMenuState, theme };
   nativeTheme.themeSource = theme;
-  const backgroundColor = nativeTheme.shouldUseDarkColors ? "#242424" : "#ececec";
-  settingsWindow?.setBackgroundColor(backgroundColor);
   sendApplicationSettingsCommand({ theme, type: "set-theme" });
   installApplicationMenu();
-  broadcastApplicationSettingsState();
 }
 
 function updateApplicationSettingsMenu(): void {
@@ -1696,7 +1605,7 @@ function installApplicationMenu(): void {
               { type: "separator" as const },
               {
                 accelerator: "CommandOrControl+,",
-                click: () => openApplicationSettingsWindow(),
+                click: () => openLooperMenu(),
                 label: "Settings…"
               },
               { type: "separator" as const },
@@ -1750,73 +1659,12 @@ function installApplicationMenu(): void {
   Menu.setApplicationMenu(applicationMenu);
 }
 
-function openApplicationSettingsWindow(): void {
-  if (settingsWindow && !settingsWindow.isDestroyed()) {
-    if (settingsWindow.isMinimized()) settingsWindow.restore();
-    settingsWindow.show();
-    settingsWindow.focus();
-    broadcastApplicationSettingsState();
-    return;
-  }
-
-  const createdWindow = new BrowserWindow({
-    width: 640,
-    height: 560,
-    minWidth: 640,
-    minHeight: 560,
-    maxWidth: 640,
-    maxHeight: 560,
-    minimizable: false,
-    maximizable: false,
-    fullscreenable: false,
-    resizable: false,
-    show: false,
-    skipTaskbar: true,
-    title: "General",
-    autoHideMenuBar: process.platform !== "darwin",
-    titleBarStyle: process.platform === "darwin" ? "hiddenInset" : "default",
-    ...(process.platform === "darwin"
-      ? { trafficLightPosition: { x: 15, y: 16 } }
-      : {}),
-    backgroundColor: nativeTheme.shouldUseDarkColors ? "#242424" : "#ececec",
-    webPreferences: {
-      preload: join(mainDir, "../preload/index.cjs"),
-      contextIsolation: true,
-      devTools: !app.isPackaged,
-      nodeIntegration: false,
-      sandbox: true,
-      webSecurity: true
-    }
-  });
-  settingsWindow = createdWindow;
-
-  createdWindow.once("ready-to-show", () => {
-    if (createdWindow.isDestroyed()) return;
-    createdWindow.show();
-    createdWindow.focus();
-    broadcastApplicationSettingsState();
-  });
-  createdWindow.on("closed", () => {
-    if (settingsWindow === createdWindow) settingsWindow = undefined;
-  });
-  createdWindow.webContents.on("will-navigate", (event, url) => {
-    if (!isTrustedRendererUrl(url)) event.preventDefault();
-  });
-  createdWindow.webContents.on("will-attach-webview", (event) => {
-    event.preventDefault();
-  });
-  createdWindow.webContents.session.setPermissionRequestHandler(
-    (_webContents, _permission, callback) => callback(false)
-  );
-  createdWindow.webContents.setWindowOpenHandler(() => ({ action: "deny" }));
-
-  if (devRendererUrl) {
-    const settingsUrl = new URL(devRendererUrl);
-    settingsUrl.searchParams.set("window", "settings");
-    void createdWindow.loadURL(settingsUrl.toString());
-  } else {
-    void createdWindow.loadURL(packagedSettingsRendererEntryUrl);
-  }
+function openLooperMenu(): void {
+  if (!mainWindow || mainWindow.isDestroyed()) return;
+  if (mainWindow.isMinimized()) mainWindow.restore();
+  mainWindow.show();
+  mainWindow.focus();
+  sendApplicationSettingsCommand({ type: "open-looper-menu" });
 }
 
 function createWindow(): void {

@@ -60,15 +60,19 @@ test("spoofs the Windows download language and target in debug mode", () => {
   );
 });
 
-test("styles the authenticated Get App button like the inverse Sign In button", async () => {
+test("styles every Get App button with the inverted theme colors", async () => {
   const styles = await readFile(stylesUrl, "utf8");
 
   assert.match(
     styles,
-    /\.titlebar-pill-button\.library-download-app-button\s*\{[^}]*color:\s*var\(--library-sign-in-text\);[^}]*background:\s*var\(--library-sign-in-bg\);[^}]*font-weight:\s*560;/s
+    /\.library-download-app-button,\s*\.signed-out-download-app-action,\s*\.mobile-marketing-download\s*\{[^}]*border-color:\s*transparent;[^}]*color:\s*var\(--library-sign-in-text\);[^}]*background:\s*var\(--library-sign-in-bg\);[^}]*font-weight:\s*560;/s
   );
   assert.match(
     styles,
-    /\.titlebar-pill-button\.library-download-app-button:hover\s*\{[^}]*background:\s*var\(--library-sign-in-bg-hover\);/s
+    /\.library-download-app-button:hover,\s*\.signed-out-download-app-action:hover,\s*\.mobile-marketing-download:hover\s*\{[^}]*background:\s*var\(--library-sign-in-bg-hover\);/s
+  );
+  assert.match(
+    styles,
+    /\.library-download-app-button:active,\s*\.signed-out-download-app-action:active,\s*\.mobile-marketing-download:active\s*\{[^}]*background:\s*var\(--library-sign-in-bg-pressed\);/s
   );
 });

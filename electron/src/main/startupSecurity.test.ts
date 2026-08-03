@@ -8,7 +8,6 @@ import {
   isTrustedPackagedRendererDocumentUrl,
   packagedRendererEntryUrl,
   packagedRendererScheme,
-  packagedSettingsRendererEntryUrl,
   resolvePackagedRendererRequestPath,
   resolveDevRendererUrl
 } from "./startupSecurity.ts";
@@ -138,14 +137,8 @@ test("trusts only the packaged renderer entry documents", () => {
     isTrustedPackagedRendererDocumentUrl(packagedRendererEntryUrl),
     true
   );
-  assert.equal(
-    isTrustedPackagedRendererDocumentUrl(
-      packagedSettingsRendererEntryUrl
-    ),
-    true
-  );
-
   for (const untrustedUrl of [
+    `${packagedRendererEntryUrl}?window=settings`,
     `${packagedRendererEntryUrl}?window=admin`,
     `${packagedRendererEntryUrl}?window=settings&window=settings`,
     `${packagedRendererEntryUrl}#fragment`,
@@ -200,11 +193,6 @@ test("wires one validated renderer URL and packaged-only startup protections", a
     /createdWindow\.loadURL\(packagedRendererEntryUrl\)/,
     "The packaged main window must use the custom renderer origin."
   );
-  assert.match(
-    mainSource,
-    /createdWindow\.loadURL\(packagedSettingsRendererEntryUrl\)/,
-    "The packaged settings window must use the custom renderer origin."
-  );
   assert.doesNotMatch(
     mainSource,
     /\.loadFile\(/,
@@ -225,7 +213,7 @@ test("wires one validated renderer URL and packaged-only startup protections", a
   );
   assert.equal(
     mainSource.match(/devTools: !app\.isPackaged/g)?.length,
-    2,
+    1,
     "Every application BrowserWindow must disable DevTools when packaged."
   );
   assert.equal(

@@ -37,7 +37,7 @@ export const libraryConcepts = [
       3: ["$1.5K", "$3K", "$4.5K", "$6K"]
     },
     source: `loop
-cost = $1,500
+cost = $1,200
 month = loop + 1
 spent = cost * month`
   },

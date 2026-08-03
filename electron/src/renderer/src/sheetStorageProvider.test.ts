@@ -46,9 +46,10 @@ test("exposes local file controls and safe drag import in the desktop library", 
     readFile(stylesSourceUrl, "utf8")
   ]);
 
-  assert.match(app, /<span>Open Sheet…<\/span>/);
-  assert.match(app, /Show Sheet Folder in Finder/);
-  assert.match(app, /Change Sheet Folder…/);
+  assert.match(app, /<span>Open File…<\/span>/);
+  assert.match(app, /Source Folder/);
+  assert.match(app, /abbreviatedSourceFolderPath\(localSheetDirectoryPath\)/);
+  assert.match(app, /Show Source in Finder/);
   assert.match(app, /openDroppedDocuments\(files\)/);
   assert.match(app, /window\.addEventListener\("drop", handleDrop\)/);
   assert.match(app, /Drop to import/);

@@ -1,7 +1,6 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
 import { App, type AppConfiguration } from "./App";
-import { SettingsWindow } from "./SettingsWindow";
 import "./styles.css";
 
 document.documentElement.dataset.platform = String(window.looper.platform);
@@ -34,15 +33,8 @@ const desktopAppConfiguration = {
   supportsSystemTheme: true
 } satisfies AppConfiguration;
 
-const isSettingsWindow =
-  new URLSearchParams(window.location.search).get("window") === "settings";
-
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
   <React.StrictMode>
-    {isSettingsWindow ? (
-      <SettingsWindow />
-    ) : (
-      <App configuration={desktopAppConfiguration} />
-    )}
+    <App configuration={desktopAppConfiguration} />
   </React.StrictMode>
 );

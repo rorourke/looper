@@ -138,7 +138,6 @@ test("the macOS installer tolerates destination-added Finder metadata after stri
     /if strict \{\s*verificationArguments\.insert\("--strict", at: 2\)/
   );
 });
-
 test("each macOS installer release has a distinct Launch Services identity", async () => {
   const [packageScript, verificationScript] = await Promise.all([
     readFile(

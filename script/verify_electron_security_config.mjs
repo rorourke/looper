@@ -164,11 +164,6 @@ assert.match(
   /createdWindow\.loadURL\(packagedRendererEntryUrl\)/,
   "The packaged main window must use the custom renderer protocol."
 );
-assert.match(
-  electronMainSource,
-  /createdWindow\.loadURL\(packagedSettingsRendererEntryUrl\)/,
-  "The packaged settings window must use the custom renderer protocol."
-);
 assert.doesNotMatch(
   electronMainSource,
   /\.loadFile\(/,
