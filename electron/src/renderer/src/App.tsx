@@ -1414,6 +1414,18 @@ type MobileMarketingConceptProps = {
   concept: LibraryConceptDefinition;
 };
 
+function highlightMobileMarketingLoop(text: string): ReactNode {
+  return text.split(/(\bloop\b)/gi).map((part, index) =>
+    /^loop$/i.test(part) ? (
+      <span className="mobile-marketing-loop" key={`loop-${index}`}>
+        {part}
+      </span>
+    ) : (
+      part
+    )
+  );
+}
+
 function MobileMarketingConcept({
   concept
 }: MobileMarketingConceptProps): ReactElement {
@@ -1474,8 +1486,16 @@ function MobileMarketingConcept({
     <>
       <article className="mobile-marketing-concept">
         <header>
-          <h3>{concept.title}</h3>
-          <p>{concept.description}</p>
+          <h3>{highlightMobileMarketingLoop(concept.title)}</h3>
+          <p
+            className={
+              concept.id === "loop-keyword"
+                ? "mobile-marketing-magic-word-subtitle"
+                : undefined
+            }
+          >
+            {highlightMobileMarketingLoop(concept.description)}
+          </p>
         </header>
         <div className="mobile-marketing-concept-code">
           {preview.sourceLines.map((source, lineNumber) => {

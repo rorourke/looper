@@ -187,6 +187,18 @@ test("turns the mobile library into a full-width marketing page", async () => {
     mobileMarketingLibrary,
     /to manipulate calculations over time\./
   );
+  assert.match(
+    sharedApp,
+    /function highlightMobileMarketingLoop\(text: string\): ReactNode/
+  );
+  assert.match(
+    sharedApp,
+    /concept\.id === "loop-keyword"[\s\S]*?mobile-marketing-magic-word-subtitle/
+  );
+  assert.match(
+    appCss,
+    /\.mobile-marketing-concept p\.mobile-marketing-magic-word-subtitle\s*\{[^}]*font-size:\s*clamp\(11px, 4vw, 16px\);[^}]*white-space:\s*nowrap;/s
+  );
   assert.doesNotMatch(
     mobileMarketingLibrary,
     /Create Sheet|newDocument|An alternative to spreadsheets|mobile-marketing-examples-heading|Mac notebook calculator/

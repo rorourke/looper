@@ -31,7 +31,7 @@ test("the magic word introduces the loop variable directly", () => {
   assert.ok(concept);
   assert.equal(libraryConcepts[0], concept);
   assert.equal(concept.title, "The Magic Word");
-  assert.match(concept.description, /counts each step/i);
+  assert.equal(concept.description, "Multiply by loop to vary each iteration.");
   assert.equal(concept.source.split("\n")[0], "loop");
   assert.ok(concept.loopCount > 0);
 

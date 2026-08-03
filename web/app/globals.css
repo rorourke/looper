@@ -1247,6 +1247,14 @@
     line-height: 1.42;
   }
 
+  :root[data-platform="web"]
+    .mobile-marketing-concept p.mobile-marketing-magic-word-subtitle {
+    overflow-wrap: normal;
+    font-size: clamp(11px, 4vw, 16px);
+    letter-spacing: -0.01em;
+    white-space: nowrap;
+  }
+
   :root[data-platform="web"] .mobile-marketing-concept-code {
     overflow-x: auto;
     color: var(--text-editor-expression);
