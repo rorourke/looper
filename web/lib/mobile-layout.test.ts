@@ -152,6 +152,14 @@ test("turns the mobile library into a full-width marketing page", async () => {
   );
   assert.match(
     appCss,
+    /@media \(max-width:\s*767px\)[\s\S]*?\.public-website-footer-content > span\s*\{[^}]*display:\s*none;[\s\S]*?\.public-website-footer-content > a::after\s*\{[^}]*content:\s*"\.";/
+  );
+  assert.match(
+    appCss,
+    /@media \(max-width:\s*767px\)[\s\S]*?\.document-library\.public-demo-library\s*\{[^}]*padding-bottom:\s*calc\(16px \+ env\(safe-area-inset-bottom\)\);/
+  );
+  assert.match(
+    appCss,
     /\.public-website-footer a\s*\{[^}]*(?:color-mix)[^}]*transition:\s*color 140ms ease;/s
   );
   assert.doesNotMatch(
