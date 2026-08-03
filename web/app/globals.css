@@ -599,7 +599,33 @@
     --titlebar-height: env(safe-area-inset-top);
     --mobile-library-left-inset: max(12px, env(safe-area-inset-left));
     --mobile-library-right-inset: max(12px, env(safe-area-inset-right));
+    display: block;
+    height: auto;
+    min-height: 100vh;
+    min-height: 100lvh;
+    overflow: visible;
     background: var(--library-canvas-bg);
+  }
+
+  :root[data-platform="web"]:has(
+      .looper-shell[data-view-mode="library"]
+    ),
+  :root[data-platform="web"]:has(
+      .looper-shell[data-view-mode="library"]
+    ) body,
+  :root[data-platform="web"]:has(
+      .looper-shell[data-view-mode="library"]
+    ) #root {
+    height: auto;
+    min-height: 100vh;
+    min-height: 100lvh;
+  }
+
+  :root[data-platform="web"]:has(
+      .looper-shell[data-view-mode="library"]
+    ) body {
+    overflow-x: hidden;
+    overflow-y: auto;
   }
 
   @supports (height: 100lvh) and (height: 100dvh) {
@@ -1060,19 +1086,17 @@
 
   :root[data-platform="web"] .document-library {
     width: 100%;
-    height: 100vh;
-    height: 100lvh;
+    height: auto;
+    min-height: 100vh;
+    min-height: 100lvh;
+    overflow: visible;
     padding:
       calc(var(--titlebar-height) + 22px)
       var(--mobile-library-right-inset)
-      calc(
-        42px + env(safe-area-inset-bottom) + var(--mobile-browser-ui-offset)
-      )
+      calc(42px + env(safe-area-inset-bottom))
       var(--mobile-library-left-inset);
     margin-top: 0;
     background: var(--library-canvas-bg);
-    overscroll-behavior-y: auto;
-    -webkit-overflow-scrolling: touch;
   }
 
   :root[data-platform="web"] .mobile-marketing-library {

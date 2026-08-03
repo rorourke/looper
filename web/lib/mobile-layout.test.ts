@@ -274,7 +274,7 @@ test("uses safe-area-backed flat iOS-sized controls for the mobile sheet header"
   assert.match(sharedApp, /isMobileWebLayout \? "Loop" : "Loop:"/);
 });
 
-test("lets mobile content extend beneath Safari chrome with terminal scroll room", async () => {
+test("lets Safari scroll the mobile library beneath its floating chrome", async () => {
   const appCss = await readFile(appCssUrl, "utf8");
 
   assert.match(appCss, /--mobile-browser-ui-offset:\s*max\(0px, calc\(100lvh - 100dvh\)\);/);
@@ -284,8 +284,24 @@ test("lets mobile content extend beneath Safari chrome with terminal scroll room
   );
   assert.match(
     appCss,
-    /\.document-library\s*\{[^}]*height:\s*100lvh;[^}]*var\(--mobile-browser-ui-offset\)[^}]*overscroll-behavior-y:\s*auto;/s
+    /\.looper-shell\[data-view-mode="library"\]\s*\{[^}]*height:\s*auto;[^}]*min-height:\s*100lvh;[^}]*overflow:\s*visible;/s
   );
+  assert.match(
+    appCss,
+    /:root\[data-platform="web"\]:has\([\s\S]*?\.looper-shell\[data-view-mode="library"\][\s\S]*?\) body\s*\{[^}]*overflow-x:\s*hidden;[^}]*overflow-y:\s*auto;/s
+  );
+  const mobileLibrary = appCss.match(
+    /:root\[data-platform="web"\] \.document-library\s*\{([^}]*)\}/s
+  );
+  assert.ok(mobileLibrary);
+  assert.match(mobileLibrary[1], /height:\s*auto;/);
+  assert.match(mobileLibrary[1], /min-height:\s*100lvh;/);
+  assert.match(mobileLibrary[1], /overflow:\s*visible;/);
+  assert.match(
+    mobileLibrary[1],
+    /calc\(42px \+ env\(safe-area-inset-bottom\)\)/
+  );
+  assert.doesNotMatch(mobileLibrary[1], /mobile-browser-ui-offset/);
   assert.match(
     appCss,
     /\.native-editor-panel \.editor-input\s*\{[^}]*padding-bottom:[^}]*var\(--mobile-browser-ui-offset\)[^}]*overscroll-behavior-y:\s*auto;/s
