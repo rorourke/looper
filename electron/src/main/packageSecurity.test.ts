@@ -138,3 +138,33 @@ test("the macOS installer tolerates destination-added Finder metadata after stri
     /if strict \{\s*verificationArguments\.insert\("--strict", at: 2\)/
   );
 });
+
+test("each macOS installer release has a distinct Launch Services identity", async () => {
+  const [packageScript, verificationScript] = await Promise.all([
+    readFile(
+      new URL("../../../script/package_macos_installer.sh", import.meta.url),
+      "utf8"
+    ),
+    readFile(
+      new URL("../../../script/verify_macos_release.sh", import.meta.url),
+      "utf8"
+    )
+  ]);
+
+  assert.match(
+    packageScript,
+    /INSTALLER_BUNDLE_IDENTIFIER="com\.nickbolton\.looper\.installer\.release-\$\{VERSION\/\/\.\/-\}"/
+  );
+  assert.match(
+    packageScript,
+    /plutil -replace CFBundleIdentifier -string "\$INSTALLER_BUNDLE_IDENTIFIER"/
+  );
+  assert.match(
+    verificationScript,
+    /expected_installer_bundle_identifier="com\.nickbolton\.looper\.installer\.release-\$\{installer_version\/\/\.\/-\}"/
+  );
+  assert.match(
+    verificationScript,
+    /installer_bundle_identifier[^]*expected_installer_bundle_identifier/
+  );
+});
