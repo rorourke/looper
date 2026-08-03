@@ -16,6 +16,10 @@ Looper is an open-source notebook calculator for Mac and Windows. Write calculat
   </picture>
 </p>
 
+<p align="center">
+  <img src="docs/screenshots/looper-compound-interest.png" width="1200" alt="Looper's Compound Interest template showing balances and annual interest over time">
+</p>
+
 ## What it does
 
 - Evaluates arithmetic, named variables, percentages, currencies, SI suffixes, functions, section summaries, and live stock or crypto prices.
