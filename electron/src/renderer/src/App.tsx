@@ -435,6 +435,36 @@ const defaultStaticResultTrailingSpace = 0;
 const defaultLoopSidebarXInset = 16;
 const mobileWebLayoutMediaQuery = "(max-width: 767px)";
 
+function loopResultPopoverPlacement(
+  target: HTMLElement,
+  rowCount: number
+): Omit<LoopResultPopoverState, "lineNumber"> {
+  const bounds = target.getBoundingClientRect();
+  const desiredHeight = Math.min(
+    loopResultPopoverMaxHeight,
+    rowCount * 28 + 10
+  );
+  const spaceBelow =
+    window.innerHeight - bounds.bottom - loopResultPopoverGap - loopResultPopoverViewportInset;
+  const spaceAbove =
+    bounds.top - loopResultPopoverGap - loopResultPopoverViewportInset;
+  const placeBelow = spaceBelow >= desiredHeight || spaceBelow >= spaceAbove;
+  const availableHeight = Math.max(56, placeBelow ? spaceBelow : spaceAbove);
+  const maxHeight = Math.min(loopResultPopoverMaxHeight, availableHeight);
+  const top = placeBelow
+    ? bounds.bottom + loopResultPopoverGap
+    : Math.max(
+        loopResultPopoverViewportInset,
+        bounds.top - loopResultPopoverGap - Math.min(desiredHeight, maxHeight)
+      );
+
+  return {
+    maxHeight,
+    right: Math.max(loopResultPopoverViewportInset, window.innerWidth - bounds.right),
+    top
+  };
+}
+
 function importedImageSource(value: string | { src: string }): string {
   return typeof value === "string" ? value : value.src;
 }
@@ -1373,6 +1403,8 @@ type MobileMarketingConceptProps = {
 function MobileMarketingConcept({
   concept
 }: MobileMarketingConceptProps): ReactElement {
+  const [loopResultPopover, setLoopResultPopover] =
+    useState<LoopResultPopoverState>();
   const preview = useMemo(() => {
     const evaluation = evaluateLooperText(
       concept.source,
@@ -1385,45 +1417,136 @@ function MobileMarketingConcept({
       sourceLines: concept.source.split("\n")
     };
   }, [concept]);
+  const loopResultPopoverLine = loopResultPopover
+    ? preview.evaluation.lines[loopResultPopover.lineNumber]
+    : undefined;
+  const loopResultPopoverValues = loopResultPopover
+    ? concept.loopValues?.[loopResultPopover.lineNumber]
+    : undefined;
+
+  useEffect(() => {
+    if (!loopResultPopover) return;
+
+    const closePopover = (): void => setLoopResultPopover(undefined);
+    const handlePointerDown = (event: globalThis.PointerEvent): void => {
+      const target = event.target;
+      if (
+        target instanceof HTMLElement &&
+        target
+          .closest<HTMLElement>(".mobile-marketing-concept-result.looped")
+          ?.dataset.loopResultConcept === concept.id
+      ) {
+        return;
+      }
+      closePopover();
+    };
+    const handleKeyDown = (event: globalThis.KeyboardEvent): void => {
+      if (event.key === "Escape") closePopover();
+    };
+
+    window.addEventListener("pointerdown", handlePointerDown);
+    window.addEventListener("keydown", handleKeyDown);
+    window.addEventListener("resize", closePopover);
+    window.addEventListener("scroll", closePopover, true);
+    return () => {
+      window.removeEventListener("pointerdown", handlePointerDown);
+      window.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener("resize", closePopover);
+      window.removeEventListener("scroll", closePopover, true);
+    };
+  }, [concept.id, loopResultPopover]);
 
   return (
-    <article className="mobile-marketing-concept">
-      <header>
-        <h3>{concept.title}</h3>
-        <p>{concept.description}</p>
-      </header>
-      <div className="mobile-marketing-concept-code">
-        {preview.sourceLines.map((source, lineNumber) => {
-          const line = preview.evaluation.lines[lineNumber];
-          const item = line?.evaluations[concept.loopCount];
-          const isLooped =
-            item?.status === "success" && Boolean(item.value?.isLooped);
+    <>
+      <article className="mobile-marketing-concept">
+        <header>
+          <h3>{concept.title}</h3>
+          <p>{concept.description}</p>
+        </header>
+        <div className="mobile-marketing-concept-code">
+          {preview.sourceLines.map((source, lineNumber) => {
+            const line = preview.evaluation.lines[lineNumber];
+            const item = line?.evaluations[concept.loopCount];
+            const loopValues = concept.loopValues?.[lineNumber];
+            const isLooped = Boolean(loopValues?.length && line);
+            const isPopoverOpen =
+              isLooped && loopResultPopover?.lineNumber === lineNumber;
+            const popoverId = `mobile-loop-result-history-${concept.id}-${lineNumber}`;
 
-          return (
-            <div
-              className="mobile-marketing-concept-row"
-              key={`${concept.id}-${lineNumber}`}
-            >
-              <code className="mobile-marketing-concept-source">
-                {highlightLine(
-                  source,
-                  line,
-                  lineNumber,
-                  preview.context
-                )}
-              </code>
-              <output
-                className={`mobile-marketing-concept-result ${
-                  isLooped ? "looped" : ""
-                }`}
+            return (
+              <div
+                className="mobile-marketing-concept-row"
+                key={`${concept.id}-${lineNumber}`}
               >
-                {formatResultText(item)}
-              </output>
-            </div>
-          );
-        })}
-      </div>
-    </article>
+                <code className="mobile-marketing-concept-source">
+                  {highlightLine(
+                    source,
+                    line,
+                    lineNumber,
+                    preview.context
+                  )}
+                </code>
+                {isLooped && line && loopValues ? (
+                  <button
+                    aria-controls={isPopoverOpen ? popoverId : undefined}
+                    aria-expanded={isPopoverOpen}
+                    aria-label={`Show values by loop iteration for ${resultLineLabel(line)}`}
+                    className={`mobile-marketing-concept-result looped ${
+                      isPopoverOpen ? "active" : ""
+                    }`}
+                    data-loop-result-concept={concept.id}
+                    onClick={(event) => {
+                      if (isPopoverOpen) {
+                        setLoopResultPopover(undefined);
+                        return;
+                      }
+                      setLoopResultPopover({
+                        lineNumber,
+                        ...loopResultPopoverPlacement(
+                          event.currentTarget,
+                          loopValues.length
+                        )
+                      });
+                    }}
+                    type="button"
+                  >
+                    {loopValues.at(-1)}
+                  </button>
+                ) : (
+                  <output className="mobile-marketing-concept-result">
+                    {formatResultText(item)}
+                  </output>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      </article>
+
+      {loopResultPopover && loopResultPopoverLine && loopResultPopoverValues
+        ? createPortal(
+            <div
+              aria-label={`Values by loop iteration for ${resultLineLabel(loopResultPopoverLine)}`}
+              className="loop-result-history-popover mobile-loop-result-history-popover"
+              id={`mobile-loop-result-history-${concept.id}-${loopResultPopover.lineNumber}`}
+              role="dialog"
+              style={{
+                maxHeight: `${loopResultPopover.maxHeight}px`,
+                right: `${loopResultPopover.right}px`,
+                top: `${loopResultPopover.top}px`
+              }}
+            >
+              {loopResultPopoverValues.map((value, index) => (
+                <div className="loop-result-history-row" key={`mobile-loop-history-${index}`}>
+                  <span className="loop-result-history-index">{index}</span>
+                  <span className="loop-result-history-value">{value}</span>
+                </div>
+              ))}
+            </div>,
+            document.body
+          )
+        : null}
+    </>
   );
 }
 
@@ -3075,30 +3198,9 @@ export function App({ configuration }: AppProps = {}): ReactElement {
 
   const showLoopResultPopover = useCallback(
     (target: HTMLElement, line: ParsedLine): void => {
-      const bounds = target.getBoundingClientRect();
-      const desiredHeight = Math.min(
-        loopResultPopoverMaxHeight,
-        line.evaluations.length * 28 + 10
-      );
-      const spaceBelow =
-        window.innerHeight - bounds.bottom - loopResultPopoverGap - loopResultPopoverViewportInset;
-      const spaceAbove =
-        bounds.top - loopResultPopoverGap - loopResultPopoverViewportInset;
-      const placeBelow = spaceBelow >= desiredHeight || spaceBelow >= spaceAbove;
-      const availableHeight = Math.max(56, placeBelow ? spaceBelow : spaceAbove);
-      const maxHeight = Math.min(loopResultPopoverMaxHeight, availableHeight);
-      const top = placeBelow
-        ? bounds.bottom + loopResultPopoverGap
-        : Math.max(
-            loopResultPopoverViewportInset,
-            bounds.top - loopResultPopoverGap - Math.min(desiredHeight, maxHeight)
-          );
-
       setLoopResultPopover({
         lineNumber: line.lineNumber,
-        maxHeight,
-        right: Math.max(loopResultPopoverViewportInset, window.innerWidth - bounds.right),
-        top
+        ...loopResultPopoverPlacement(target, line.evaluations.length)
       });
     },
     []

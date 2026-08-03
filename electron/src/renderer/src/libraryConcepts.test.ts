@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { evaluateLooperText } from "./looperEngine.ts";
 import { libraryConcepts } from "./libraryConcepts.ts";
+import { formatResultText } from "./resultFormatting.ts";
 
 test("library concepts are unique, valid Looper examples", () => {
   assert.equal(new Set(libraryConcepts.map((concept) => concept.id)).size, libraryConcepts.length);
@@ -33,4 +34,31 @@ test("the magic word introduces the loop variable directly", () => {
   assert.match(concept.description, /counts each step/i);
   assert.equal(concept.source.split("\n")[0], "loop");
   assert.ok(concept.loopCount > 0);
+});
+
+test("hardcoded mobile histories match the fixed marketing examples", () => {
+  const conceptsWithLoopValues = libraryConcepts.filter(
+    (concept) => "loopValues" in concept
+  );
+
+  assert.deepEqual(
+    conceptsWithLoopValues.map((concept) => concept.id),
+    ["loop-keyword", "loop-helpers"]
+  );
+
+  for (const concept of conceptsWithLoopValues) {
+    const evaluation = evaluateLooperText(
+      concept.source,
+      concept.loopCount
+    );
+
+    for (const [lineNumberText, values] of Object.entries(concept.loopValues)) {
+      const lineNumber = Number(lineNumberText);
+      assert.deepEqual(
+        evaluation.lines[lineNumber].evaluations.map(formatResultText),
+        values,
+        `${concept.title} line ${lineNumber} should keep its hardcoded history current`
+      );
+    }
+  }
 });

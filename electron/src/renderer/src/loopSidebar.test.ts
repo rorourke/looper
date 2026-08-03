@@ -106,17 +106,40 @@ describe("loop sidebar published variable labels", () => {
 });
 
 describe("loop sidebar result colors", () => {
-  test("uses the loop color for values calculated from a loop", () => {
+  test("uses gray brackets and green values for looped results", () => {
     const css = readFileSync(new URL("./styles.css", import.meta.url), "utf8");
 
     assert.match(
       css,
-      /\.result-value\.looped,\s*\.static-result-value\.looped\s*{[^}]*color:\s*var\(--text-editor-looped-number\)/s
+      /\.result-value\.looped,\s*\.static-result-value\.looped\s*{[^}]*color:\s*var\(--text-editor-number\)/s
     );
     assert.match(
       css,
-      /\.loop-result-history-value\s*{[^}]*color:\s*var\(--text-editor-looped-number\)/s
+      /\.result-value\.looped::before,\s*\.static-result-value\.looped::before\s*{[^}]*color:\s*var\(--line-number-color\);[^}]*content:\s*"\[";/s
     );
+    assert.match(
+      css,
+      /\.result-value\.looped::after,\s*\.static-result-value\.looped::after\s*{[^}]*color:\s*var\(--line-number-color\);[^}]*content:\s*"\]";/s
+    );
+    assert.match(
+      css,
+      /\.loop-result-history-index\s*{[^}]*color:\s*var\(--text-editor-looped-number\)/s
+    );
+    assert.match(
+      css,
+      /\.loop-result-history-value\s*{[^}]*color:\s*var\(--text-editor-number\)/s
+    );
+  });
+
+  test("makes looped mobile examples open the same indexed-value popover", () => {
+    const appSource = readFileSync(new URL("./App.tsx", import.meta.url), "utf8");
+
+    assert.match(appSource, /const loopValues = concept\.loopValues\?\.\[lineNumber\]/);
+    assert.match(appSource, /className={`mobile-marketing-concept-result looped/);
+    assert.match(appSource, /data-loop-result-concept={concept\.id}/);
+    assert.match(appSource, /mobile-loop-result-history-popover/);
+    assert.match(appSource, /loopResultPopoverValues\.map\(\(value, index\) =>/);
+    assert.match(appSource, /window\.addEventListener\("pointerdown", handlePointerDown\)/);
   });
 });
 

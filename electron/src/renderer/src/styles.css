@@ -3673,9 +3673,23 @@ body:has(.looper-shell[data-view-mode="library"]),
 }
 
 .static-result-value.looped {
-  cursor: default;
+  cursor: pointer;
   pointer-events: auto;
   transition: background-color 120ms ease;
+}
+
+.result-value.looped::before,
+.static-result-value.looped::before {
+  margin-right: 0.16em;
+  color: var(--line-number-color);
+  content: "[";
+}
+
+.result-value.looped::after,
+.static-result-value.looped::after {
+  margin-left: 0.16em;
+  color: var(--line-number-color);
+  content: "]";
 }
 
 .static-result-value.looped:hover,
@@ -3735,7 +3749,7 @@ body:has(.looper-shell[data-view-mode="library"]),
 
 .loop-result-history-value {
   overflow: hidden;
-  color: var(--text-editor-looped-number);
+  color: var(--text-editor-number);
   text-align: right;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -4085,7 +4099,7 @@ body:has(.looper-shell[data-view-mode="library"]),
 
 .result-value.looped,
 .static-result-value.looped {
-  color: var(--text-editor-looped-number);
+  color: var(--text-editor-number);
 }
 
 .result-value.error,
