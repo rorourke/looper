@@ -51,6 +51,20 @@ export function LooperWebApp() {
   }, []);
 
   useEffect(() => {
+    const keepPageTitle = (): void => {
+      if (document.title !== "Looper") document.title = "Looper";
+    };
+    const observer = new MutationObserver(keepPageTitle);
+    observer.observe(document.head, {
+      characterData: true,
+      childList: true,
+      subtree: true
+    });
+    keepPageTitle();
+    return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
     if (!("serviceWorker" in navigator)) return;
     let canceled = false;
     let followUpTimeout: number | undefined;
