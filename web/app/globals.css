@@ -1295,7 +1295,7 @@
     padding: 2px 4px;
     border: 0;
     border-radius: 4px;
-    color: var(--text-editor-number);
+    color: var(--text-editor-looped-number);
     background: transparent;
     line-height: inherit;
     cursor: pointer;
