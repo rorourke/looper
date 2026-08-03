@@ -167,3 +167,23 @@ test("each macOS installer release has a distinct Launch Services identity", asy
     /installer_bundle_identifier[^]*expected_installer_bundle_identifier/
   );
 });
+
+test("Windows releases compile out internal debug access before packaging", async () => {
+  const windowsPackageScript = await readFile(
+    new URL("../../../script/package_windows.sh", import.meta.url),
+    "utf8"
+  );
+
+  assert.match(
+    windowsPackageScript,
+    /export MAIN_VITE_INTERNAL_DEBUG_BUILD=false/
+  );
+  assert.match(
+    windowsPackageScript,
+    /pnpm build\s+verify_release_debug_build_is_disabled\s+pnpm exec electron-builder/
+  );
+  assert.match(
+    windowsPackageScript,
+    /Refusing to package a Windows release with internal debug access enabled\./
+  );
+});

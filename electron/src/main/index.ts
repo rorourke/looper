@@ -77,6 +77,7 @@ import {
   LocalSheetStore,
   SheetStorageSettingsStore
 } from "./localSheets";
+import { safeFileName } from "./fileNames";
 import {
   normalizeLocalDocumentImportPaths,
   readLocalDocumentImport
@@ -406,16 +407,6 @@ async function saveDocument(_event: Electron.IpcMainInvokeEvent, request: SaveDo
 
   await writeFile(savePath, `${JSON.stringify(request.data, null, 2)}\n`, "utf8");
   return { canceled: false, path: savePath };
-}
-
-function safeFileName(value: string, fallback: string): string {
-  const fileName = value
-    .trim()
-    .replace(/\.loop$/i, "")
-    .replace(/[/:]/g, "-")
-    .replace(/^\.+$/, "")
-    .trim();
-  return fileName || fallback;
 }
 
 async function exportDocument(

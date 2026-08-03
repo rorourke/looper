@@ -1566,11 +1566,13 @@ function MobileMarketingConcept({
 
 type MobileMarketingLibraryProps = {
   downloadHref: string;
+  downloadLabel: string;
   iconSource: string;
 };
 
 function MobileMarketingLibrary({
   downloadHref,
+  downloadLabel,
   iconSource
 }: MobileMarketingLibraryProps): ReactElement {
   return (
@@ -1594,7 +1596,7 @@ function MobileMarketingLibrary({
             href={downloadHref}
           >
             <UiIcon icon={Download} />
-            <span>Get Mac App</span>
+            <span>{downloadLabel}</span>
           </a>
           <a
             className="mobile-marketing-action mobile-marketing-source"
@@ -9187,6 +9189,7 @@ export function App({ configuration }: AppProps = {}): ReactElement {
           {isMobileWebLayout ? (
             <MobileMarketingLibrary
               downloadHref={downloadHref}
+              downloadLabel={downloadAppLabel}
               iconSource={libraryIconSource}
             />
           ) : (

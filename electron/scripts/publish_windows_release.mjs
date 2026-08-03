@@ -21,7 +21,7 @@ if (
   throw new Error(`Invalid release version: ${String(version)}`);
 }
 
-const latestDownloadManifestPath = "releases/macos/latest-download.json";
+const latestManifestPath = "releases/windows/latest-download.json";
 
 function compareVersions(left, right) {
   const leftParts = left.split(".").map(Number);
@@ -44,7 +44,7 @@ async function existingBlob(pathname) {
 }
 
 async function refuseReleaseOlderThanCurrent() {
-  const existingManifest = await existingBlob(latestDownloadManifestPath);
+  const existingManifest = await existingBlob(latestManifestPath);
   if (!existingManifest) return;
 
   const response = await fetch(existingManifest.url, {
@@ -55,23 +55,23 @@ async function refuseReleaseOlderThanCurrent() {
   });
   if (!response.ok) {
     throw new Error(
-      `Could not read the current macOS release manifest (${response.status}).`
+      `Could not read the current Windows release manifest (${response.status}).`
     );
   }
   const manifestText = await response.text();
   if (Buffer.byteLength(manifestText, "utf8") > 16_384) {
-    throw new Error("The current macOS release manifest is unexpectedly large.");
+    throw new Error("The current Windows release manifest is unexpectedly large.");
   }
   const currentVersion = JSON.parse(manifestText)?.version;
   if (
     typeof currentVersion !== "string" ||
     !/^[0-9]+\.[0-9]+\.[0-9]+$/.test(currentVersion)
   ) {
-    throw new Error("The current macOS release manifest has an invalid version.");
+    throw new Error("The current Windows release manifest has an invalid version.");
   }
   if (compareVersions(version, currentVersion) < 0) {
     throw new Error(
-      `Refusing to replace macOS ${currentVersion} with older release ${version}.`
+      `Refusing to replace Windows ${currentVersion} with older release ${version}.`
     );
   }
 }
@@ -79,20 +79,17 @@ async function refuseReleaseOlderThanCurrent() {
 await refuseReleaseOlderThanCurrent();
 
 const artifactNames = [
-  `Looper-${version}-macOS-arm64.dmg`,
-  `Looper-${version}-macOS-arm64.zip`,
-  `Looper-${version}-macOS-arm64.zip.blockmap`,
-  `Looper-${version}-macOS-x64.dmg`,
-  `Looper-${version}-macOS-x64.zip`,
-  `Looper-${version}-macOS-x64.zip.blockmap`,
-  `Looper-Installer-${version}.dmg`
+  `Looper-${version}-Windows-arm64.exe`,
+  `Looper-${version}-Windows-arm64.zip`,
+  `Looper-${version}-Windows-x64.exe`,
+  `Looper-${version}-Windows-x64.zip`
 ];
 const uploaded = new Map();
 const artifactContents = new Map();
 
 for (const artifactName of artifactNames) {
   const artifact = await readFile(join(releaseDir, artifactName));
-  const pathname = `releases/macos/${artifactName}`;
+  const pathname = `releases/windows/${artifactName}`;
   const previousUpload = await existingBlob(pathname);
   if (previousUpload && previousUpload.size !== artifact.byteLength) {
     throw new Error(
@@ -116,69 +113,49 @@ for (const artifactName of artifactNames) {
   );
 }
 
-function zipMetadata(architecture) {
-  const name = `Looper-${version}-macOS-${architecture}.zip`;
+function artifactMetadata(name) {
   const contents = artifactContents.get(name);
   const upload = uploaded.get(name);
   if (!contents || !upload) {
-    throw new Error(`Missing uploaded update ZIP: ${name}`);
+    throw new Error(`Missing uploaded Windows artifact: ${name}`);
   }
   return {
-    name,
     sha512: createHash("sha512").update(contents).digest("base64"),
     size: contents.byteLength,
     url: upload.url
   };
 }
 
-const arm64Zip = zipMetadata("arm64");
-const x64Zip = zipMetadata("x64");
-const publishedAt = new Date().toISOString();
-const latestMacYaml = [
-  `version: ${JSON.stringify(version)}`,
-  "files:",
-  `  - url: ${JSON.stringify(arm64Zip.url)}`,
-  `    sha512: ${JSON.stringify(arm64Zip.sha512)}`,
-  `    size: ${arm64Zip.size}`,
-  `  - url: ${JSON.stringify(x64Zip.url)}`,
-  `    sha512: ${JSON.stringify(x64Zip.sha512)}`,
-  `    size: ${x64Zip.size}`,
-  `path: ${JSON.stringify(arm64Zip.url)}`,
-  `sha512: ${JSON.stringify(arm64Zip.sha512)}`,
-  `releaseDate: ${JSON.stringify(publishedAt)}`,
-  `releaseName: ${JSON.stringify(`Looper ${version}`)}`,
-  `releaseNotes: ${JSON.stringify(`Looper ${version} is ready to install.`)}`,
-  ""
-].join("\n");
-const latestMacResult = await put(
-  "releases/macos/latest-mac.yml",
-  latestMacYaml,
-  {
-    access: "public",
-    addRandomSuffix: false,
-    allowOverwrite: true,
-    cacheControlMaxAge: 60,
-    contentType: "text/yaml",
-    token
-  }
-);
-console.log(`Uploaded latest-mac.yml: ${latestMacResult.url}`);
-
+const arm64InstallerName = `Looper-${version}-Windows-arm64.exe`;
+const arm64ZipName = `Looper-${version}-Windows-arm64.zip`;
+const x64InstallerName = `Looper-${version}-Windows-x64.exe`;
+const x64ZipName = `Looper-${version}-Windows-x64.zip`;
+const arm64Installer = artifactMetadata(arm64InstallerName);
+const arm64Zip = artifactMetadata(arm64ZipName);
+const x64Installer = artifactMetadata(x64InstallerName);
+const x64Zip = artifactMetadata(x64ZipName);
 const latestDownloadManifest = JSON.stringify(
   {
     version,
-    arm64Url: uploaded.get(`Looper-${version}-macOS-arm64.dmg`).url,
-    arm64ZipUrl: uploaded.get(`Looper-${version}-macOS-arm64.zip`).url,
-    installerUrl: uploaded.get(`Looper-Installer-${version}.dmg`).url,
-    publishedAt,
-    x64Url: uploaded.get(`Looper-${version}-macOS-x64.dmg`).url,
-    x64ZipUrl: uploaded.get(`Looper-${version}-macOS-x64.zip`).url
+    arm64Sha512: arm64Installer.sha512,
+    arm64Size: arm64Installer.size,
+    arm64Url: arm64Installer.url,
+    arm64ZipSha512: arm64Zip.sha512,
+    arm64ZipSize: arm64Zip.size,
+    arm64ZipUrl: arm64Zip.url,
+    publishedAt: new Date().toISOString(),
+    x64Sha512: x64Installer.sha512,
+    x64Size: x64Installer.size,
+    x64Url: x64Installer.url,
+    x64ZipSha512: x64Zip.sha512,
+    x64ZipSize: x64Zip.size,
+    x64ZipUrl: x64Zip.url
   },
   null,
   2
 );
 const latestDownloadResult = await put(
-  latestDownloadManifestPath,
+  latestManifestPath,
   latestDownloadManifest,
   {
     access: "public",

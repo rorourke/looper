@@ -30,11 +30,11 @@ export const libraryConcepts = [
     id: "loop-keyword",
     title: "The Magic Word",
     description: "loop counts each step from zero.",
-    loopCount: 3,
+    loopCount: 4,
     loopValues: {
-      0: ["0", "1", "2", "3"],
-      2: ["1", "2", "3", "4"],
-      3: ["$1.5K", "$3K", "$4.5K", "$6K"]
+      0: ["0", "1", "2", "3", "4"],
+      2: ["1", "2", "3", "4", "5"],
+      3: ["$1.2K", "$2.4K", "$3.6K", "$4.8K", "$6K"]
     },
     source: `loop
 cost = $1,200

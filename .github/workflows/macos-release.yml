@@ -9,7 +9,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: macos-release-${{ github.ref }}
+  group: macos-release
   cancel-in-progress: false
 
 jobs:
@@ -75,12 +75,6 @@ jobs:
           APPLE_API_KEY_ID: ${{ secrets.APPLE_API_KEY_ID }}
         run: ./script/package_macos.sh release all
 
-      - name: Upload public downloads and updater metadata
-        env:
-          BLOB_READ_WRITE_TOKEN: ${{ secrets.BLOB_READ_WRITE_TOKEN }}
-        working-directory: electron
-        run: node scripts/publish_macos_release.mjs
-
       - name: Keep a workflow copy of release artifacts
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
@@ -92,3 +86,9 @@ jobs:
             electron/release/Looper-*-macOS-*.zip.blockmap
             electron/release/Looper-Installer-*.dmg
           retention-days: 30
+
+      - name: Upload public downloads and updater metadata
+        env:
+          BLOB_READ_WRITE_TOKEN: ${{ secrets.BLOB_READ_WRITE_TOKEN }}
+        working-directory: electron
+        run: node scripts/publish_macos_release.mjs

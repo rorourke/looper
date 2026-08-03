@@ -2,6 +2,10 @@
 
 import { useEffect, useLayoutEffect, useState } from "react";
 import { createBrowserLooperApi } from "@/lib/browser-looper-api";
+import {
+  downloadPlatformForUserAgent,
+  type DesktopDownloadPlatform
+} from "@/lib/download-platform";
 import { migrateToSystemTheme, resolveWebTheme } from "@/lib/web-theme";
 import looperWebIcon from "../../electron/build/icon.ico";
 import {
@@ -26,6 +30,8 @@ function WebAppLoadingStatus() {
 
 export function LooperWebApp() {
   const [clientReady, setClientReady] = useState(false);
+  const [downloadPlatform, setDownloadPlatform] =
+    useState<DesktopDownloadPlatform>("macos");
 
   useLayoutEffect(() => {
     const root = document.documentElement;
@@ -34,6 +40,7 @@ export function LooperWebApp() {
     if (!window.looper) {
       window.looper = createBrowserLooperApi();
     }
+    setDownloadPlatform(downloadPlatformForUserAgent(window.navigator.userAgent));
 
     try {
       const theme = migrateToSystemTheme(window.localStorage);
@@ -177,6 +184,7 @@ export function LooperWebApp() {
 
   const configuration = {
     browserHistoryNavigation: true,
+    downloadPlatform,
     editorContentStartsBelowHeader: true,
     headerControlSize: "compact",
     libraryIconSource: looperWebIconSource,

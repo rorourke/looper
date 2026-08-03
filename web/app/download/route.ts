@@ -1,9 +1,10 @@
 import {
   preferredMacDownloadUrl,
-  resolveWindowsDownloadUrl
+  preferredWindowsDownloadUrl
 } from "@/lib/download-url";
 import { requestedDownloadPlatform } from "@/lib/download-platform";
 import { fetchLatestMacDownloadManifest } from "@/lib/latest-mac-download";
+import { fetchLatestWindowsDownloadManifest } from "@/lib/latest-windows-download";
 
 export const dynamic = "force-dynamic";
 
@@ -51,9 +52,10 @@ export async function GET(request: Request): Promise<Response> {
   }
 
   if (platform === "windows") {
-    const windowsDownloadUrl = resolveWindowsDownloadUrl(
-      process.env.LOOPER_WINDOWS_DOWNLOAD_URL
+    const latestDownload = await fetchLatestWindowsDownloadManifest(
+      process.env.LOOPER_WINDOWS_RELEASE_BASE_URL
     );
+    const windowsDownloadUrl = preferredWindowsDownloadUrl(latestDownload);
     return windowsDownloadUrl
       ? downloadRedirect(windowsDownloadUrl)
       : unavailableDownloadResponse(platform);

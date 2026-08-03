@@ -30,6 +30,7 @@ import {
   normalizeTitle,
   normalizeUuid
 } from "./cloudAccount.ts";
+import { safeFileName } from "./fileNames.ts";
 
 const localSheetFormatVersion = 1 as const;
 const settingsFormatVersion = 1 as const;
@@ -132,17 +133,6 @@ function storedPayload(sheet: Omit<LocalSheet, "path">): JsonObject {
       updatedAt: sheet.updatedAt
     }
   };
-}
-
-function safeFileName(value: string): string {
-  const safe = value
-    .normalize("NFC")
-    .replace(/[\u0000-\u001f\u007f/\\:]/g, "-")
-    .replace(/^\.+$/, "")
-    .trim()
-    .slice(0, 96)
-    .trim();
-  return safe || "Untitled";
 }
 
 function normalizeCreateInput(value: unknown): CreateLocalSheetInput {

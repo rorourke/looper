@@ -2,10 +2,13 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import {
   preferredMacDownloadUrl,
+  preferredWindowsDownloadUrl,
   resolveLatestMacDownloadManifest,
+  resolveLatestWindowsDownloadManifest,
   resolveMacDownloadUrl,
   resolveMacUpdateArtifactUrl,
-  resolveWindowsDownloadUrl
+  resolveWindowsDownloadUrl,
+  resolveWindowsReleaseArtifactUrl
 } from "./download-url.ts";
 
 test("normalizes a public Vercel Blob macOS artifact to a forced download", () => {
@@ -64,6 +67,31 @@ test("normalizes only trusted Windows installers and archives", () => {
     `${baseUrl}Looper.exe#fragment`
   ]) {
     assert.equal(resolveWindowsDownloadUrl(value), null);
+  }
+});
+
+test("resolves only known Windows release artifacts", () => {
+  const baseUrl =
+    "https://example.public.blob.vercel-storage.com/releases/windows/";
+  assert.equal(
+    resolveWindowsReleaseArtifactUrl(baseUrl, "latest-download.json")?.href,
+    `${baseUrl}latest-download.json`
+  );
+  assert.equal(
+    resolveWindowsReleaseArtifactUrl(
+      baseUrl,
+      "Looper-1.2.3-Windows-arm64.exe"
+    )?.href,
+    `${baseUrl}Looper-1.2.3-Windows-arm64.exe`
+  );
+
+  for (const artifact of [
+    "../latest-download.json",
+    "arbitrary.exe",
+    "Looper-1.2-Windows-x64.exe",
+    "Looper-1.2.3-Windows-ia32.exe"
+  ]) {
+    assert.equal(resolveWindowsReleaseArtifactUrl(baseUrl, artifact), null);
   }
 });
 
@@ -224,4 +252,43 @@ test("uses only downloads from the signed release manifest", () => {
     "/releases/macos/Looper-1.2.3-macOS-arm64.dmg"
   );
   assert.equal(preferredMacDownloadUrl(null), null);
+});
+
+test("validates and prefers the x64 Windows installer manifest", () => {
+  const baseUrl =
+    "https://example.public.blob.vercel-storage.com/releases/windows";
+  const manifestValue = {
+    version: "1.2.3",
+    arm64Url: `${baseUrl}/Looper-1.2.3-Windows-arm64.exe`,
+    arm64ZipUrl: `${baseUrl}/Looper-1.2.3-Windows-arm64.zip`,
+    publishedAt: "2026-08-03T05:30:00.000Z",
+    x64Url: `${baseUrl}/Looper-1.2.3-Windows-x64.exe`,
+    x64ZipUrl: `${baseUrl}/Looper-1.2.3-Windows-x64.zip`
+  };
+  const manifest = resolveLatestWindowsDownloadManifest(manifestValue);
+
+  assert.equal(manifest?.version, "1.2.3");
+  assert.equal(
+    preferredWindowsDownloadUrl(manifest)?.href,
+    `${baseUrl}/Looper-1.2.3-Windows-x64.exe?download=1`
+  );
+  assert.equal(preferredWindowsDownloadUrl(null), null);
+  assert.equal(
+    resolveLatestWindowsDownloadManifest(
+      {
+        ...manifestValue,
+        x64Url:
+          "https://attacker.public.blob.vercel-storage.com/releases/windows/Looper-1.2.3-Windows-x64.exe"
+      },
+      `${baseUrl}/latest-download.json`
+    ),
+    null
+  );
+  assert.equal(
+    resolveLatestWindowsDownloadManifest({
+      ...manifestValue,
+      arm64Url: `${baseUrl}/Looper-1.2.2-Windows-arm64.exe`
+    }),
+    null
+  );
 });

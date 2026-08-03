@@ -77,6 +77,10 @@ The public repository contains:
 - `installer/` — the small native macOS bootstrap that downloads and installs the Electron release; it is not the original native Looper app.
 - `script/` — local packaging, signing, updater, and artifact-verification tools.
 
+See [macOS distribution](docs/macos-distribution.md) and
+[Windows distribution](docs/windows-distribution.md) for the signed-release
+and platform-specific download pipelines.
+
 The original native macOS implementation and the retired account, billing, and cloud-service backend are intentionally not part of this public project.
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) before proposing a substantial change and [SECURITY.md](SECURITY.md) for private vulnerability reporting.
