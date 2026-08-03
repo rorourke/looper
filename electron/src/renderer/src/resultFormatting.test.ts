@@ -18,7 +18,7 @@ const loopedEvaluation: LineEvaluation = {
 };
 
 describe("result formatting", () => {
-  test("leaves looped values unbracketed", () => {
+  test("keeps loop brackets in the presentation layer", () => {
     assert.equal(formatResultText(loopedEvaluation), "$125");
   });
 
@@ -86,6 +86,25 @@ describe("result formatting", () => {
         0
       ),
       6
+    );
+  });
+
+  test("reserves room for brackets around a looped result", () => {
+    assert.equal(
+      resultColumnCharacterCount(
+        [
+          {
+            dependsOnLoop: true,
+            evaluations: [loopedEvaluation],
+            expression: "",
+            kind: "equation",
+            lineNumber: 0,
+            source: "balance = $125 * loop"
+          }
+        ],
+        0
+      ),
+      7
     );
   });
 

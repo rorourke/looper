@@ -24,9 +24,11 @@ export function resultColumnCharacterCount(
 ): number {
   return lines.reduce((longest, line) => {
     if (line.kind !== "equation") return longest;
+    const evaluation = line.evaluations[activeLoop];
+    const bracketCharacterCount = evaluation?.value?.isLooped ? 3 : 0;
     return Math.max(
       longest,
-      Array.from(formatResultText(line.evaluations[activeLoop])).length
+      Array.from(formatResultText(evaluation)).length + bracketCharacterCount
     );
   }, 1);
 }

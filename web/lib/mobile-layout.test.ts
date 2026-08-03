@@ -71,12 +71,32 @@ test("turns the mobile library into a full-width marketing page", async () => {
     appCss,
     /\.mobile-marketing-concept-result\s*\{[^}]*color:\s*var\(--text-editor-number\);/s
   );
+  assert.match(
+    appCss,
+    /\.mobile-marketing-concept-result\.looped\s*\{[^}]*color:\s*var\(--text-editor-number\);[^}]*cursor:\s*pointer;/s
+  );
+  assert.match(
+    appCss,
+    /\.mobile-marketing-concept-result\.looped::before\s*\{[^}]*color:\s*var\(--line-number-color\);[^}]*content:\s*"\[";/s
+  );
+  assert.match(
+    appCss,
+    /\.mobile-marketing-concept-result\.looped::after\s*\{[^}]*color:\s*var\(--line-number-color\);[^}]*content:\s*"\]";/s
+  );
   assert.doesNotMatch(sharedApp, /className="mobile-marketing-nav"/);
   assert.match(
     sharedApp,
     /isMobileWebLayout \? \(\s*<MobileMarketingLibrary[\s\S]*?downloadHref=\{downloadHref\}/s
   );
   assert.match(sharedApp, /libraryConcepts\.map\(\(concept\) =>/);
+  assert.match(sharedApp, /const loopValues = concept\.loopValues\?\.\[lineNumber\]/);
+  assert.match(sharedApp, /data-loop-result-concept={concept\.id}/);
+  assert.match(sharedApp, /mobile-loop-result-history-popover/);
+  assert.match(sharedApp, /loopResultPopoverValues\.map\(\(value, index\) =>/);
+  assert.match(
+    sharedApp,
+    /window\.addEventListener\("pointerdown", handlePointerDown\)/
+  );
   assert.match(sharedApp, /<span>Get Mac App<\/span>/);
   assert.match(sharedApp, /<span>View Source<\/span>/);
   assert.match(sharedApp, /https:\/\/github\.com\/rorourke\/looper/);

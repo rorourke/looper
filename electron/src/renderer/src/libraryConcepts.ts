@@ -4,6 +4,7 @@ export type LibraryConceptDefinition = {
   description: string;
   id: string;
   loopCount: number;
+  loopValues?: Readonly<Partial<Record<number, readonly string[]>>>;
   source: string;
   stockQuotes?: StockQuoteMap;
   title: string;
@@ -30,6 +31,11 @@ export const libraryConcepts = [
     title: "The Magic Word",
     description: "loop counts each step from zero.",
     loopCount: 3,
+    loopValues: {
+      0: ["0", "1", "2", "3"],
+      2: ["1", "2", "3", "4"],
+      3: ["$1.5K", "$3K", "$4.5K", "$6K"]
+    },
     source: `loop
 cost = $1,500
 month = loop + 1
@@ -122,6 +128,12 @@ best_month = maxsection`
     title: "Loop Helpers",
     description: "Read the first, last, or previous loop value.",
     loopCount: 3,
+    loopValues: {
+      0: ["$10K", "$11K", "$12.1K", "$13.31K"],
+      1: ["$10K", "$10K", "$10K", "$10K"],
+      2: ["$13.31K", "$13.31K", "$13.31K", "$13.31K"],
+      3: ["0", "$10K", "$11K", "$12.1K"]
+    },
     source: `value = $10k * 1.1 ^ loop
 first = loop.first(value)
 last = loop.last(value)

@@ -1290,6 +1290,45 @@
     color: var(--text-editor-looped-number);
   }
 
+  :root[data-platform="web"] .mobile-marketing-concept-result.looped {
+    appearance: none;
+    padding: 2px 4px;
+    border: 0;
+    border-radius: 4px;
+    color: var(--text-editor-number);
+    background: transparent;
+    line-height: inherit;
+    cursor: pointer;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  :root[data-platform="web"] .mobile-marketing-concept-result.looped::before {
+    margin-right: 0.16em;
+    color: var(--line-number-color);
+    content: "[";
+  }
+
+  :root[data-platform="web"] .mobile-marketing-concept-result.looped::after {
+    margin-left: 0.16em;
+    color: var(--line-number-color);
+    content: "]";
+  }
+
+  :root[data-platform="web"] .mobile-marketing-concept-result.looped:hover,
+  :root[data-platform="web"] .mobile-marketing-concept-result.looped.active {
+    background: var(--sheet-control-hover-bg);
+  }
+
+  :root[data-platform="web"] .mobile-marketing-concept-result.looped:focus-visible {
+    outline: 1px solid currentColor;
+    outline-offset: 2px;
+  }
+
+  .mobile-loop-result-history-popover {
+    touch-action: manipulation;
+  }
+
   :root[data-platform="web"]
     .mobile-marketing-concept
     .syntax-variable {
