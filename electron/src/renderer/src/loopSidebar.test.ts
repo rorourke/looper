@@ -106,12 +106,12 @@ describe("loop sidebar published variable labels", () => {
 });
 
 describe("loop sidebar result colors", () => {
-  test("uses gray brackets and green values for looped results", () => {
+  test("uses purple collapsed values and green per-iteration values", () => {
     const css = readFileSync(new URL("./styles.css", import.meta.url), "utf8");
 
     assert.match(
       css,
-      /\.result-value\.looped,\s*\.static-result-value\.looped\s*{[^}]*color:\s*var\(--text-editor-number\)/s
+      /\.result-value\.looped,\s*\.static-result-value\.looped\s*{[^}]*color:\s*var\(--text-editor-looped-number\)/s
     );
     assert.match(
       css,

@@ -4099,7 +4099,7 @@ body:has(.looper-shell[data-view-mode="library"]),
 
 .result-value.looped,
 .static-result-value.looped {
-  color: var(--text-editor-number);
+  color: var(--text-editor-looped-number);
 }
 
 .result-value.error,

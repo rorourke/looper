@@ -73,7 +73,7 @@ test("turns the mobile library into a full-width marketing page", async () => {
   );
   assert.match(
     appCss,
-    /\.mobile-marketing-concept-result\.looped\s*\{[^}]*color:\s*var\(--text-editor-number\);[^}]*cursor:\s*pointer;/s
+    /\.mobile-marketing-concept-result\.looped\s*\{[^}]*color:\s*var\(--text-editor-looped-number\);[^}]*cursor:\s*pointer;/s
   );
   assert.match(
     appCss,
