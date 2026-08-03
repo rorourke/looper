@@ -297,7 +297,7 @@
 
 :root[data-platform="web"] .signed-out-download-app-action,
 :root[data-platform="web"] .library-download-app-button,
-:root[data-platform="web"] .mobile-marketing-download {
+:root[data-platform="web"] .mobile-marketing-action.mobile-marketing-download {
   border-color: transparent;
   color: var(--library-sign-in-text);
   background: var(--library-sign-in-bg);
@@ -306,7 +306,7 @@
 
 :root[data-platform="web"] .signed-out-download-app-action:hover,
 :root[data-platform="web"] .library-download-app-button:hover,
-:root[data-platform="web"] .mobile-marketing-download:hover {
+:root[data-platform="web"] .mobile-marketing-action.mobile-marketing-download:hover {
   border-color: transparent;
   color: var(--library-sign-in-text);
   background: var(--library-sign-in-bg-hover);
@@ -314,7 +314,7 @@
 
 :root[data-platform="web"] .signed-out-download-app-action:active,
 :root[data-platform="web"] .library-download-app-button:active,
-:root[data-platform="web"] .mobile-marketing-download:active {
+:root[data-platform="web"] .mobile-marketing-action.mobile-marketing-download:active {
   background: var(--library-sign-in-bg-pressed);
 }
 

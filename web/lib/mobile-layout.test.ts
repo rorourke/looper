@@ -49,7 +49,15 @@ test("turns the mobile library into a full-width marketing page", async () => {
   assert.ok(invertedDownloadIndex < mobileBreakpointIndex);
   assert.match(
     appCss,
-    /\.signed-out-download-app-action,[\s\S]*\.library-download-app-button,[\s\S]*\.mobile-marketing-download\s*\{[^}]*border-color:\s*transparent;[^}]*color:\s*var\(--library-sign-in-text\);[^}]*background:\s*var\(--library-sign-in-bg\);[^}]*box-shadow:\s*var\(--library-sign-in-shadow\);/s
+    /\.signed-out-download-app-action,[\s\S]*\.library-download-app-button,[\s\S]*\.mobile-marketing-action\.mobile-marketing-download\s*\{[^}]*border-color:\s*transparent;[^}]*color:\s*var\(--library-sign-in-text\);[^}]*background:\s*var\(--library-sign-in-bg\);[^}]*box-shadow:\s*var\(--library-sign-in-shadow\);/s
+  );
+  assert.match(
+    appCss,
+    /\.mobile-marketing-action\.mobile-marketing-download:hover\s*\{[^}]*background:\s*var\(--library-sign-in-bg-hover\);/s
+  );
+  assert.match(
+    appCss,
+    /\.mobile-marketing-action\.mobile-marketing-download:active\s*\{[^}]*background:\s*var\(--library-sign-in-bg-pressed\);/s
   );
   assert.match(
     appCss,
