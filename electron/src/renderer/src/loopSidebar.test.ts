@@ -115,12 +115,13 @@ describe("loop sidebar result colors", () => {
     );
     assert.match(
       css,
-      /\.result-value\.looped::before,\s*\.static-result-value\.looped::before\s*{[^}]*color:\s*var\(--line-number-color\);[^}]*content:\s*"\[";/s
+      /\.static-result-value\.looped::before\s*{[^}]*color:\s*var\(--line-number-color\);[^}]*content:\s*"\[";/s
     );
     assert.match(
       css,
-      /\.result-value\.looped::after,\s*\.static-result-value\.looped::after\s*{[^}]*color:\s*var\(--line-number-color\);[^}]*content:\s*"\]";/s
+      /\.static-result-value\.looped::after\s*{[^}]*color:\s*var\(--line-number-color\);[^}]*content:\s*"\]";/s
     );
+    assert.doesNotMatch(css, /\.result-value\.looped::(?:before|after)/);
     assert.match(
       css,
       /\.loop-result-history-index\s*{[^}]*color:\s*var\(--text-editor-looped-number\)/s

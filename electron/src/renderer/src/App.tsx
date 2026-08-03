@@ -1657,7 +1657,7 @@ function PublicWebsiteFooter(): ReactElement {
         </span>
         <span aria-hidden="true">·</span>
         <a href={looperSourceUrl} rel="noreferrer" target="_blank">
-          View Source
+          View GitHub Project
         </a>
       </div>
     </footer>

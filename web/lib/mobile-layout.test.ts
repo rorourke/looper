@@ -108,7 +108,7 @@ test("turns the mobile library into a full-width marketing page", async () => {
     /href=\{looperCreatorUrl\}[\s\S]*Ryan O&apos;Rourke/
   );
   assert.match(sharedApp, /<span aria-hidden="true">·<\/span>/);
-  assert.match(sharedApp, />\s*View Source\s*<\/a>/);
+  assert.match(sharedApp, />\s*View GitHub Project\s*<\/a>/);
   assert.match(
     sharedApp,
     /className="public-website-footer-divider" role="separator"/
@@ -152,7 +152,11 @@ test("turns the mobile library into a full-width marketing page", async () => {
   );
   assert.match(
     appCss,
-    /@media \(max-width:\s*767px\)[\s\S]*?\.document-library\.public-demo-library\s*\{[^}]*padding-bottom:\s*calc\(24px \+ env\(safe-area-inset-bottom\)\);/
+    /@media \(max-width:\s*767px\)[\s\S]*?\.document-library\.public-demo-library\s*\{[^}]*padding-bottom:\s*calc\(20px \+ env\(safe-area-inset-bottom\)\);/
+  );
+  assert.match(
+    appCss,
+    /@media \(max-width:\s*767px\)[\s\S]*?\.mobile-marketing-intro h1\s*\{[^}]*padding-inline:\s*2px;/
   );
   assert.match(
     appCss,

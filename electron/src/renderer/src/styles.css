@@ -3739,14 +3739,12 @@ body:has(.looper-shell[data-view-mode="library"]),
   transition: background-color 120ms ease;
 }
 
-.result-value.looped::before,
 .static-result-value.looped::before {
   margin-right: 0.16em;
   color: var(--line-number-color);
   content: "[";
 }
 
-.result-value.looped::after,
 .static-result-value.looped::after {
   margin-left: 0.16em;
   color: var(--line-number-color);
