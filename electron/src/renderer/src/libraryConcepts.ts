@@ -29,7 +29,7 @@ export const libraryConcepts = [
   {
     id: "loop-keyword",
     title: "The Magic Word",
-    description: "loop counts each step from zero.",
+    description: "Multiply by loop to vary each iteration.",
     loopCount: 4,
     loopValues: {
       0: ["0", "1", "2", "3", "4"],

@@ -1100,7 +1100,7 @@
   }
 
   :root[data-platform="web"] .document-library.public-demo-library {
-    padding-bottom: calc(24px + env(safe-area-inset-bottom));
+    padding-bottom: calc(20px + env(safe-area-inset-bottom));
   }
 
   :root[data-platform="web"] .mobile-marketing-library {
@@ -1140,6 +1140,7 @@
   }
 
   :root[data-platform="web"] .mobile-marketing-intro h1 {
+    padding-inline: 2px;
     margin: 0;
     color: var(--library-hero-secondary);
     font-size: clamp(22px, 6.2vw, 27px);
@@ -1245,6 +1246,14 @@
     font-size: 16px;
     font-weight: 400;
     line-height: 1.42;
+  }
+
+  :root[data-platform="web"]
+    .mobile-marketing-concept p.mobile-marketing-magic-word-subtitle {
+    overflow-wrap: normal;
+    font-size: clamp(11px, 4vw, 16px);
+    letter-spacing: -0.01em;
+    white-space: nowrap;
   }
 
   :root[data-platform="web"] .mobile-marketing-concept-code {
