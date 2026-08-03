@@ -21,7 +21,7 @@ test("has one integrated header design with no alternate presentation switch", a
   }
 });
 
-test("keeps the progressive blur on editor headers and off the library", async () => {
+test("progressively blurs scrolling content beneath the integrated header", async () => {
   const styles = await readFile(stylesUrl, "utf8");
 
   assert.match(styles, /--integrated-header-blur-radius:\s*14px;/);
@@ -32,11 +32,7 @@ test("keeps the progressive blur on editor headers and off the library", async (
   );
   assert.match(
     styles,
-    /\.native-editor-panel::after,[\s\S]*\.loop-results::before\s*\{[^}]*backdrop-filter:\s*blur\(var\(--integrated-header-blur-radius\)\);[^}]*mask-image:\s*var\(--integrated-header-mask\);/s
-  );
-  assert.doesNotMatch(
-    styles,
-    /\.looper-shell\[data-view-mode="library"\]::before/
+    /\.looper-shell\[data-view-mode="library"\]::before,[\s\S]*\.native-editor-panel::after,[\s\S]*\.loop-results::before\s*\{[^}]*backdrop-filter:\s*blur\(var\(--integrated-header-blur-radius\)\);[^}]*mask-image:\s*var\(--integrated-header-mask\);/s
   );
   assert.match(
     styles,

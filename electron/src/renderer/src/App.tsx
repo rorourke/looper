@@ -9,6 +9,7 @@ import {
 import { createPortal } from "react-dom";
 import {
   ArrowRight,
+  BookOpen,
   Bug,
   Check,
   ChevronDown,
@@ -189,7 +190,9 @@ import {
   defaultDecimalPlacesStorageKey,
   nextApplicationTheme,
   parseDefaultDecimalPlaces,
+  parseShowGettingStartedFiles,
   parseStartupView,
+  showGettingStartedFilesStorageKey,
   startupViewStorageKey,
   type StartupView
 } from "./applicationPreferences";
@@ -201,6 +204,7 @@ import {
   libraryConcepts,
   type LibraryConceptDefinition
 } from "./libraryConcepts";
+import { abbreviatedSourceFolderPath } from "./sourceFolder";
 import {
   clampLoopVariablesDrawerHeight,
   clampLoopSidebarWidth,
@@ -531,6 +535,16 @@ function readStoredStartupView(): StartupView {
     );
   } catch {
     return "last-sheet";
+  }
+}
+
+function readStoredShowGettingStartedFiles(): boolean {
+  try {
+    return parseShowGettingStartedFiles(
+      window.localStorage.getItem(showGettingStartedFilesStorageKey)
+    );
+  } catch {
+    return true;
   }
 }
 
@@ -1552,11 +1566,13 @@ function MobileMarketingConcept({
 
 type MobileMarketingLibraryProps = {
   downloadHref: string;
+  downloadLabel: string;
   iconSource: string;
 };
 
 function MobileMarketingLibrary({
   downloadHref,
+  downloadLabel,
   iconSource
 }: MobileMarketingLibraryProps): ReactElement {
   return (
@@ -1580,7 +1596,7 @@ function MobileMarketingLibrary({
             href={downloadHref}
           >
             <UiIcon icon={Download} />
-            <span>Get Mac App</span>
+            <span>{downloadLabel}</span>
           </a>
           <a
             className="mobile-marketing-action mobile-marketing-source"
@@ -2143,6 +2159,9 @@ export function App({ configuration }: AppProps = {}): ReactElement {
   const [startupView, setStartupView] = useState<StartupView>(
     readStoredStartupView
   );
+  const [showGettingStartedFiles, setShowGettingStartedFiles] = useState(
+    readStoredShowGettingStartedFiles
+  );
   const [initialLibraryState] = useState<InitialLibraryState>(() => {
     const initialState = readInitialLibraryState(
       sharedSheet,
@@ -2206,6 +2225,7 @@ export function App({ configuration }: AppProps = {}): ReactElement {
   const [isLibrarySearchOverflowing, setIsLibrarySearchOverflowing] = useState(false);
   const [isLibrarySettingsMenuOpen, setIsLibrarySettingsMenuOpen] = useState(false);
   const [isLocalSheetDropActive, setIsLocalSheetDropActive] = useState(false);
+  const [localSheetDirectoryPath, setLocalSheetDirectoryPath] = useState<string>();
   const [librarySettingsMenuView, setLibrarySettingsMenuView] =
     useState<LibrarySettingsMenuView>("root");
   const localSheetDropDepthRef = useRef(0);
@@ -2720,23 +2740,27 @@ export function App({ configuration }: AppProps = {}): ReactElement {
         ),
     [libraryDocuments]
   );
+  const visibleGettingStartedLibraryDocuments = useMemo(
+    () => showGettingStartedFiles ? gettingStartedLibraryDocuments : [],
+    [gettingStartedLibraryDocuments, showGettingStartedFiles]
+  );
   const learningLibraryDocuments = useMemo(
     () =>
-      gettingStartedLibraryDocuments.filter(
+      visibleGettingStartedLibraryDocuments.filter(
         (document) => gettingStartedExampleSection(document.id) === "learn"
       ),
-    [gettingStartedLibraryDocuments]
+    [visibleGettingStartedLibraryDocuments]
   );
   const templateLibraryDocuments = useMemo(
     () =>
-      gettingStartedLibraryDocuments.filter(
+      visibleGettingStartedLibraryDocuments.filter(
         (document) => gettingStartedExampleSection(document.id) === "template"
       ),
-    [gettingStartedLibraryDocuments]
+    [visibleGettingStartedLibraryDocuments]
   );
   const searchableLibraryDocuments = useMemo(
-    () => [...presentedUserLibraryDocuments, ...gettingStartedLibraryDocuments],
-    [gettingStartedLibraryDocuments, presentedUserLibraryDocuments]
+    () => [...presentedUserLibraryDocuments, ...visibleGettingStartedLibraryDocuments],
+    [presentedUserLibraryDocuments, visibleGettingStartedLibraryDocuments]
   );
   const selectedLibraryDocuments = useMemo(
     () =>
@@ -4946,12 +4970,12 @@ export function App({ configuration }: AppProps = {}): ReactElement {
       await window.looper.revealLocalSheetDirectory();
       setMessage(
         runtimePlatform === "darwin"
-          ? "Opened the sheet folder in Finder"
-          : "Opened the sheet folder in File Explorer"
+          ? "Opened the source folder in Finder"
+          : "Opened the source folder in File Explorer"
       );
     } catch (error) {
       setMessage(
-        error instanceof Error ? error.message : "The sheet folder could not be opened."
+        error instanceof Error ? error.message : "The source folder could not be opened."
       );
     }
   }, []);
@@ -4961,14 +4985,15 @@ export function App({ configuration }: AppProps = {}): ReactElement {
     try {
       const current = await window.looper.getSheetStorageSettings();
       const next = await window.looper.setSheetStorageProvider("local", true);
+      setLocalSheetDirectoryPath(next.localDirectoryPath);
       setMessage(
         next.localDirectoryPath === current.localDirectoryPath
-          ? "Sheet folder unchanged"
-          : "Sheet folder changed"
+          ? "Source folder unchanged"
+          : "Source folder changed"
       );
     } catch (error) {
       setMessage(
-        error instanceof Error ? error.message : "The sheet folder could not be changed."
+        error instanceof Error ? error.message : "The source folder could not be changed."
       );
     }
   }, []);
@@ -6782,9 +6807,16 @@ export function App({ configuration }: AppProps = {}): ReactElement {
         });
     };
 
-    const stopListening = window.looper.onSheetStorageSettingsChanged(() => {
+    const stopListening = window.looper.onSheetStorageSettingsChanged((settings) => {
+      setLocalSheetDirectoryPath(settings.localDirectoryPath);
       loadLocalSheets(true);
     });
+    void window.looper
+      .getSheetStorageSettings()
+      .then((settings) => {
+        if (!canceled) setLocalSheetDirectoryPath(settings.localDirectoryPath);
+      })
+      .catch(() => undefined);
     loadLocalSheets();
 
     return () => {
@@ -6890,6 +6922,12 @@ export function App({ configuration }: AppProps = {}): ReactElement {
   useEffect(
     () =>
       window.looper.onApplicationSettingsCommand((command) => {
+        if (command.type === "open-looper-menu") {
+          showDocumentLibrary();
+          setLibrarySettingsMenuView("root");
+          setIsLibrarySettingsMenuOpen(true);
+          return;
+        }
         if (command.type === "show-admin-panel") {
           closeDocumentMenu();
           closeLibraryDocumentMenu();
@@ -6929,6 +6967,7 @@ export function App({ configuration }: AppProps = {}): ReactElement {
       closeLibraryBulkMenu,
       closeLibraryDocumentMenu,
       exportAllLibraryDocuments,
+      showDocumentLibrary,
       signOut
     ]
   );
@@ -6983,11 +7022,15 @@ export function App({ configuration }: AppProps = {}): ReactElement {
         defaultDecimalPlacesStorageKey,
         String(defaultDecimalPlaces)
       );
+      window.localStorage.setItem(
+        showGettingStartedFilesStorageKey,
+        String(showGettingStartedFiles)
+      );
       window.localStorage.setItem(startupViewStorageKey, startupView);
     } catch {
       // Preferences remain available for this session when storage is unavailable.
     }
-  }, [defaultDecimalPlaces, startupView]);
+  }, [defaultDecimalPlaces, showGettingStartedFiles, startupView]);
 
   useLayoutEffect(() => {
     if (viewMode !== "library") return;
@@ -8522,8 +8565,7 @@ export function App({ configuration }: AppProps = {}): ReactElement {
                 >
                   {librarySettingsMenuView === "root" ? (
                     <>
-                      {debugSettingsAreAvailable ||
-                      presentedAccountHasAdminAccess ||
+                      {presentedAccountHasAdminAccess ||
                       presentedAccountNeedsAdminMfa ? (
                         <>
                           <div
@@ -8531,27 +8573,6 @@ export function App({ configuration }: AppProps = {}): ReactElement {
                             className="settings-internal-tools"
                             role="group"
                           >
-                            {debugSettingsAreAvailable ? (
-                              <button
-                                className="settings-menu-action settings-drill-row settings-internal-action"
-                                onClick={() => setLibrarySettingsMenuView("debug")}
-                                type="button"
-                              >
-                                <span className="settings-menu-item-copy">
-                                  <UiIcon
-                                    aria-hidden="true"
-                                    className="settings-menu-item-icon"
-                                    icon={Bug}
-                                  />
-                                  <span>Debug</span>
-                                </span>
-                                <UiIcon
-                                  aria-hidden="true"
-                                  className="settings-drill-chevron"
-                                  icon={ChevronRight}
-                                />
-                              </button>
-                            ) : null}
                             {presentedAccountHasAdminAccess ? (
                               <button
                                 className="settings-menu-action settings-internal-action"
@@ -8683,7 +8704,28 @@ export function App({ configuration }: AppProps = {}): ReactElement {
                                   className="settings-menu-item-icon"
                                   icon={FileInput}
                                 />
-                                <span>Open Sheet…</span>
+                                <span>Open File…</span>
+                              </span>
+                            </button>
+                            <button
+                              aria-label={`Source Folder: ${
+                                localSheetDirectoryPath ?? "Loading"
+                              }. Choose a different folder`}
+                              className="settings-row settings-setting-row settings-source-folder-row"
+                              onClick={() => void changeLocalSheetDirectory()}
+                              title={localSheetDirectoryPath}
+                              type="button"
+                            >
+                              <span className="settings-menu-item-copy">
+                                <UiIcon
+                                  aria-hidden="true"
+                                  className="settings-menu-item-icon"
+                                  icon={FolderCog}
+                                />
+                                <span className="settings-label">Source Folder</span>
+                              </span>
+                              <span className="settings-setting-value settings-source-folder-value">
+                                {abbreviatedSourceFolderPath(localSheetDirectoryPath)}
                               </span>
                             </button>
                             <button
@@ -8699,29 +8741,38 @@ export function App({ configuration }: AppProps = {}): ReactElement {
                                 />
                                 <span>
                                   {runtimePlatform === "darwin"
-                                    ? "Show Sheet Folder in Finder"
-                                    : "Show Sheet Folder in File Explorer"}
+                                    ? "Show Source in Finder"
+                                    : "Show Source in File Explorer"}
                                 </span>
-                              </span>
-                            </button>
-                            <button
-                              className="settings-menu-action"
-                              onClick={() => void changeLocalSheetDirectory()}
-                              type="button"
-                            >
-                              <span className="settings-menu-item-copy">
-                                <UiIcon
-                                  aria-hidden="true"
-                                  className="settings-menu-item-icon"
-                                  icon={FolderCog}
-                                />
-                                <span>Change Sheet Folder…</span>
                               </span>
                             </button>
                           </div>
                           <div className="settings-separator" role="separator" />
                         </>
                       ) : null}
+                      <button
+                        aria-checked={showGettingStartedFiles}
+                        className="settings-menu-action settings-toggle-row"
+                        onClick={() =>
+                          setShowGettingStartedFiles((current) => !current)
+                        }
+                        role="menuitemcheckbox"
+                        type="button"
+                      >
+                        <span className="settings-menu-item-copy">
+                          <UiIcon
+                            aria-hidden="true"
+                            className="settings-menu-item-icon"
+                            icon={BookOpen}
+                          />
+                          <span>Show Getting Started Files</span>
+                        </span>
+                        <span aria-hidden="true" className="settings-menu-check-slot">
+                          {showGettingStartedFiles ? (
+                            <UiIcon className="settings-menu-check" icon={Check} />
+                          ) : null}
+                        </span>
+                      </button>
                       <button
                         aria-label={`Appearance: ${themeName(theme)}. Switch to ${themeName(nextAppearanceTheme)}`}
                         className="settings-row settings-setting-row"
@@ -8774,6 +8825,30 @@ export function App({ configuration }: AppProps = {}): ReactElement {
                               />
                               <span>Delete Account…</span>
                             </span>
+                          </button>
+                        </>
+                      ) : null}
+                      {debugSettingsAreAvailable ? (
+                        <>
+                          <div className="settings-separator" role="separator" />
+                          <button
+                            className="settings-menu-action settings-drill-row settings-debug-action"
+                            onClick={() => setLibrarySettingsMenuView("debug")}
+                            type="button"
+                          >
+                            <span className="settings-menu-item-copy">
+                              <UiIcon
+                                aria-hidden="true"
+                                className="settings-menu-item-icon"
+                                icon={Bug}
+                              />
+                              <span>Debug</span>
+                            </span>
+                            <UiIcon
+                              aria-hidden="true"
+                              className="settings-drill-chevron"
+                              icon={ChevronRight}
+                            />
                           </button>
                         </>
                       ) : null}
@@ -9114,6 +9189,7 @@ export function App({ configuration }: AppProps = {}): ReactElement {
           {isMobileWebLayout ? (
             <MobileMarketingLibrary
               downloadHref={downloadHref}
+              downloadLabel={downloadAppLabel}
               iconSource={libraryIconSource}
             />
           ) : (

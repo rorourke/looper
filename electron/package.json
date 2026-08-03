@@ -99,6 +99,7 @@
     },
     "nsis": {
       "allowToChangeInstallationDirectory": true,
+      "buildUniversalInstaller": false,
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
       "oneClick": false,

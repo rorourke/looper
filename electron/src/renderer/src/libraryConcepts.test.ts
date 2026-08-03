@@ -34,6 +34,19 @@ test("the magic word introduces the loop variable directly", () => {
   assert.match(concept.description, /counts each step/i);
   assert.equal(concept.source.split("\n")[0], "loop");
   assert.ok(concept.loopCount > 0);
+
+  const evaluation = evaluateLooperText(concept.source, concept.loopCount);
+  const spent = evaluation.lines.at(-1);
+  assert.deepEqual(
+    spent?.evaluations.map((item) => [item.loop, item.value?.formatted]),
+    [
+      [0, "$1.2K"],
+      [1, "$2.4K"],
+      [2, "$3.6K"],
+      [3, "$4.8K"],
+      [4, "$6K"]
+    ]
+  );
 });
 
 test("hardcoded mobile histories match the fixed marketing examples", () => {

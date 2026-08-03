@@ -86,7 +86,7 @@ test("turns the mobile library into a full-width marketing page", async () => {
   assert.doesNotMatch(sharedApp, /className="mobile-marketing-nav"/);
   assert.match(
     sharedApp,
-    /isMobileWebLayout \? \(\s*<MobileMarketingLibrary[\s\S]*?downloadHref=\{downloadHref\}/s
+    /isMobileWebLayout \? \(\s*<MobileMarketingLibrary[\s\S]*?downloadHref=\{downloadHref\}[\s\S]*?downloadLabel=\{downloadAppLabel\}/s
   );
   assert.match(sharedApp, /libraryConcepts\.map\(\(concept\) =>/);
   assert.match(sharedApp, /const loopValues = concept\.loopValues\?\.\[lineNumber\]/);
@@ -97,7 +97,7 @@ test("turns the mobile library into a full-width marketing page", async () => {
     sharedApp,
     /window\.addEventListener\("pointerdown", handlePointerDown\)/
   );
-  assert.match(sharedApp, /<span>Get Mac App<\/span>/);
+  assert.match(sharedApp, /<span>\{downloadLabel\}<\/span>/);
   assert.match(sharedApp, /<span>View Source<\/span>/);
   assert.match(sharedApp, /https:\/\/github\.com\/rorourke\/looper/);
   assert.match(sharedApp, /function PublicWebsiteFooter\(\): ReactElement/);
@@ -258,7 +258,7 @@ test("keeps the public demo actions explicit and hides account controls", async 
   );
   assert.match(
     sharedApp,
-    /className="mobile-marketing-action mobile-marketing-download"[\s\S]*<span>Get Mac App<\/span>/s
+    /className="mobile-marketing-action mobile-marketing-download"[\s\S]*<span>\{downloadLabel\}<\/span>/s
   );
   assert.match(
     sharedApp,

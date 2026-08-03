@@ -10,8 +10,6 @@ export const packagedRendererScheme = "looper-app";
 const packagedRendererHost = "renderer";
 export const packagedRendererEntryUrl =
   `${packagedRendererScheme}://${packagedRendererHost}/index.html`;
-export const packagedSettingsRendererEntryUrl =
-  `${packagedRendererEntryUrl}?window=settings`;
 const maximumPackagedRendererUrlLength = 4_096;
 const packagedRendererRequestPattern =
   /^looper-app:\/\/renderer(\/[^?#]*)?(?:\?[^#]*)?$/;
@@ -133,8 +131,5 @@ export function resolvePackagedRendererRequestPath(
 }
 
 export function isTrustedPackagedRendererDocumentUrl(value: string): boolean {
-  return (
-    value === packagedRendererEntryUrl ||
-    value === packagedSettingsRendererEntryUrl
-  );
+  return value === packagedRendererEntryUrl;
 }

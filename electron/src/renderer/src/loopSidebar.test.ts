@@ -111,7 +111,7 @@ describe("loop sidebar result colors", () => {
 
     assert.match(
       css,
-      /\.result-value\.looped,\s*\.static-result-value\.looped\s*{[^}]*color:\s*var\(--text-editor-looped-number\)/s
+      /\.result-value\.looped,\s*\.static-result-value\.looped,\s*\.mobile-marketing-concept-result\.looped\s*{[^}]*color:\s*var\(--text-editor-looped-number\)/s
     );
     assert.match(
       css,

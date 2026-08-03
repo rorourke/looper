@@ -29,8 +29,7 @@ import {
   applicationSettingsIpcChannels,
   isApplicationSettingsCommand,
   type ApplicationSettingsCommand,
-  type ApplicationSettingsMenuState,
-  type ApplicationSettingsPreferenceChange
+  type ApplicationSettingsMenuState
 } from "../shared/applicationSettings";
 import {
   appUpdateIpcChannels,
@@ -165,27 +164,6 @@ const looperApi = {
     invokeMain(adminIpcChannels.getOverview, page),
   getAdminSheet: (sheetId: string): Promise<CloudSheet> =>
     invokeMain(adminIpcChannels.getSheet, sheetId),
-  openApplicationSettings: (): Promise<void> =>
-    invokeMain(applicationSettingsIpcChannels.openWindow),
-  getApplicationSettings: (): Promise<ApplicationSettingsMenuState> =>
-    invokeMain(applicationSettingsIpcChannels.getState),
-  setApplicationSettingsPreference: (
-    change: ApplicationSettingsPreferenceChange
-  ): Promise<ApplicationSettingsMenuState> =>
-    invokeMain(applicationSettingsIpcChannels.preferenceChanged, change),
-  requestExportAllSheetsFromSettings: (): Promise<void> =>
-    invokeMain(applicationSettingsIpcChannels.requestExportAll),
-  onApplicationSettingsStateChanged: (
-    callback: (state: ApplicationSettingsMenuState) => void
-  ): (() => void) => {
-    const listener = (
-      _event: Electron.IpcRendererEvent,
-      state: ApplicationSettingsMenuState
-    ): void => callback(state);
-    ipcRenderer.on(applicationSettingsIpcChannels.stateChanged, listener);
-    return () =>
-      ipcRenderer.removeListener(applicationSettingsIpcChannels.stateChanged, listener);
-  },
   updateApplicationSettingsMenu: (
     state: ApplicationSettingsMenuState
   ): Promise<void> =>

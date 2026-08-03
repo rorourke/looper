@@ -1,0 +1,142 @@
+name: Windows release
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version to build without publishing (for example 0.1.5)"
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: windows-release
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: windows-2025
+    timeout-minutes: 60
+    steps:
+      - name: Check out source
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
+        with:
+          version: 11.9.0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 24
+          cache: pnpm
+          cache-dependency-path: electron/pnpm-lock.yaml
+
+      - name: Install dependencies
+        working-directory: electron
+        run: pnpm install --frozen-lockfile
+
+      - name: Audit production dependencies
+        working-directory: electron
+        run: pnpm audit --prod --audit-level high
+
+      - name: Set release version
+        id: release_version
+        env:
+          DISPATCH_VERSION: ${{ inputs.version }}
+        shell: bash
+        working-directory: electron
+        run: |
+          if [[ "$GITHUB_EVENT_NAME" == "workflow_dispatch" ]]; then
+            release_version="$DISPATCH_VERSION"
+          else
+            release_version="${GITHUB_REF_NAME#v}"
+          fi
+          if [[ ! "$release_version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "Tag must be a semantic version such as v1.2.3." >&2
+            exit 1
+          fi
+          current_version="$(node -p "require('./package.json').version")"
+          if [[ "$current_version" != "$release_version" ]]; then
+            pnpm version "$release_version" --no-git-tag-version
+          fi
+          echo "version=$release_version" >> "$GITHUB_OUTPUT"
+
+      - name: Build and package Windows releases
+        env:
+          CSC_KEY_PASSWORD: ${{ secrets.WINDOWS_CERTIFICATE_PASSWORD }}
+          CSC_LINK: ${{ secrets.WINDOWS_CERTIFICATE_PFX_BASE64 }}
+        shell: bash
+        run: ./script/package_windows.sh all
+
+      - name: Verify Windows release artifacts
+        env:
+          CSC_KEY_PASSWORD: ${{ secrets.WINDOWS_CERTIFICATE_PASSWORD }}
+          CSC_LINK: ${{ secrets.WINDOWS_CERTIFICATE_PFX_BASE64 }}
+        working-directory: electron
+        run: node ../script/verify_windows_release.mjs all
+
+      - name: Smoke-test x64 installer and installed app
+        shell: pwsh
+        working-directory: electron
+        run: |
+          $version = "${{ steps.release_version.outputs.version }}"
+          $installer = Join-Path $PWD "release/Looper-$version-Windows-x64.exe"
+          $installerProcess = Start-Process -FilePath $installer -ArgumentList "/S" -PassThru -Wait
+          if ($installerProcess.ExitCode -ne 0) {
+            throw "Looper's silent installer exited with $($installerProcess.ExitCode)."
+          }
+
+          $installedApps = @(
+            Get-ChildItem -LiteralPath (Join-Path $env:LOCALAPPDATA "Programs") `
+              -Filter "Looper.exe" -File -Recurse -ErrorAction SilentlyContinue
+          )
+          if ($installedApps.Count -ne 1) {
+            throw "Expected one installed Looper.exe, found $($installedApps.Count)."
+          }
+          $executable = $installedApps[0].FullName
+          $process = Start-Process -FilePath $executable -PassThru
+          try {
+            Start-Sleep -Seconds 10
+            if ($process.HasExited) {
+              throw "Packaged Looper exited during the Windows launch smoke test."
+            }
+          } finally {
+            taskkill.exe /PID $process.Id /T /F 2>$null | Out-Null
+          }
+
+          $uninstallers = @(
+            Get-ChildItem -LiteralPath $installedApps[0].DirectoryName `
+              -Filter "Uninstall*.exe" -File -ErrorAction SilentlyContinue
+          )
+          if ($uninstallers.Count -ne 1) {
+            throw "Expected one Looper uninstaller, found $($uninstallers.Count)."
+          }
+          $uninstallerProcess = Start-Process -FilePath $uninstallers[0].FullName `
+            -ArgumentList "/S" -PassThru -Wait
+          if ($uninstallerProcess.ExitCode -ne 0) {
+            throw "Looper's silent uninstaller exited with $($uninstallerProcess.ExitCode)."
+          }
+
+      - name: Keep a workflow copy of release artifacts
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: Looper-v${{ steps.release_version.outputs.version }}-Windows
+          if-no-files-found: error
+          path: |
+            electron/release/Looper-*-Windows-*.exe
+            electron/release/Looper-*-Windows-*.zip
+          retention-days: 30
+
+      - name: Upload public downloads and metadata
+        if: github.event_name == 'push'
+        env:
+          BLOB_READ_WRITE_TOKEN: ${{ secrets.BLOB_READ_WRITE_TOKEN }}
+        working-directory: electron
+        run: node scripts/publish_windows_release.mjs

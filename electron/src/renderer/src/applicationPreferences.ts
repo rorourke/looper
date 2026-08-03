@@ -8,6 +8,8 @@ export type StartupView = "last-sheet" | "library";
 
 export const defaultDecimalPlacesStorageKey =
   "looper.defaultDecimalPlaces.v1";
+export const showGettingStartedFilesStorageKey =
+  "looper.showGettingStartedFiles";
 export const startupViewStorageKey = "looper.startupView";
 
 export function parseDefaultDecimalPlaces(value: unknown): number {
@@ -28,6 +30,10 @@ export function parseDefaultDecimalPlaces(value: unknown): number {
 
 export function parseStartupView(value: unknown): StartupView {
   return value === "library" ? "library" : "last-sheet";
+}
+
+export function parseShowGettingStartedFiles(value: unknown): boolean {
+  return value !== false && value !== "false";
 }
 
 export function nextApplicationTheme(

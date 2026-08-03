@@ -4,6 +4,9 @@ const releaseVersionPattern =
 const updateArtifactPattern = new RegExp(
   `^(?:latest-mac\\.yml|latest-download\\.json|Looper-Installer-${releaseVersionPattern}\\.dmg|Looper-${releaseVersionPattern}-macOS-(?:arm64|x64)\\.(?:dmg|zip))$`
 );
+const windowsReleaseArtifactPattern = new RegExp(
+  `^(?:latest-download\\.json|Looper-${releaseVersionPattern}-Windows-(?:arm64|x64)\\.(?:exe|zip))$`
+);
 
 function publicVercelBlobUrl(value: string | undefined): URL | null {
   if (!value) return null;
@@ -58,6 +61,18 @@ export function resolveWindowsDownloadUrl(
   return url;
 }
 
+export function resolveWindowsReleaseArtifactUrl(
+  baseValue: string | undefined,
+  artifact: string
+): URL | null {
+  if (!windowsReleaseArtifactPattern.test(artifact)) return null;
+  const baseUrl = publicVercelBlobUrl(baseValue);
+  if (!baseUrl || baseUrl.search) return null;
+
+  baseUrl.pathname = `${baseUrl.pathname.replace(/\/+$/, "")}/${artifact}`;
+  return baseUrl;
+}
+
 export function resolveMacUpdateArtifactUrl(
   baseValue: string | undefined,
   artifact: string
@@ -80,10 +95,25 @@ export type LatestMacDownloadManifest = {
   x64ZipUrl: URL;
 };
 
+export type LatestWindowsDownloadManifest = {
+  arm64Url: URL;
+  arm64ZipUrl: URL;
+  publishedAt: string;
+  version: string;
+  x64Url: URL;
+  x64ZipUrl: URL;
+};
+
 export function preferredMacDownloadUrl(
   manifest: LatestMacDownloadManifest | null
 ): URL | null {
   return manifest?.installerUrl ?? manifest?.arm64Url ?? null;
+}
+
+export function preferredWindowsDownloadUrl(
+  manifest: LatestWindowsDownloadManifest | null
+): URL | null {
+  return manifest?.x64Url ?? null;
 }
 
 export function resolveLatestMacDownloadManifest(
@@ -156,6 +186,75 @@ export function resolveLatestMacDownloadManifest(
     arm64Url,
     arm64ZipUrl,
     installerUrl,
+    publishedAt,
+    version,
+    x64Url,
+    x64ZipUrl
+  };
+}
+
+export function resolveLatestWindowsDownloadManifest(
+  value: unknown,
+  manifestUrlValue?: string | URL
+): LatestWindowsDownloadManifest | null {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return null;
+  const manifest = value as Record<string, unknown>;
+  const version =
+    typeof manifest.version === "string" ? manifest.version.trim() : "";
+  if (!new RegExp(`^${releaseVersionPattern}$`).test(version)) return null;
+
+  const arm64Url = resolveWindowsDownloadUrl(
+    typeof manifest.arm64Url === "string" ? manifest.arm64Url : undefined
+  );
+  const arm64ZipUrl = resolveWindowsDownloadUrl(
+    typeof manifest.arm64ZipUrl === "string"
+      ? manifest.arm64ZipUrl
+      : undefined
+  );
+  const x64Url = resolveWindowsDownloadUrl(
+    typeof manifest.x64Url === "string" ? manifest.x64Url : undefined
+  );
+  const x64ZipUrl = resolveWindowsDownloadUrl(
+    typeof manifest.x64ZipUrl === "string" ? manifest.x64ZipUrl : undefined
+  );
+  const publishedAt =
+    typeof manifest.publishedAt === "string" ? manifest.publishedAt : "";
+  const manifestUrl = publicVercelBlobUrl(manifestUrlValue?.toString());
+  const manifestStoreWasProvided = manifestUrlValue !== undefined;
+  const trustedReleaseDirectory = manifestUrl
+    ? manifestUrl.pathname.slice(0, manifestUrl.pathname.lastIndexOf("/") + 1)
+    : null;
+  const artifactUrls = [arm64Url, arm64ZipUrl, x64Url, x64ZipUrl].filter(
+    (url): url is URL => Boolean(url)
+  );
+  const artifactsShareManifestStore =
+    !manifestStoreWasProvided ||
+    (manifestUrl !== null &&
+      artifactUrls.every(
+        (url) =>
+          url.origin === manifestUrl.origin &&
+          url.pathname.startsWith(trustedReleaseDirectory ?? "/")
+      ));
+
+  if (
+    !arm64Url?.pathname.endsWith(
+      `Looper-${version}-Windows-arm64.exe`
+    ) ||
+    !arm64ZipUrl?.pathname.endsWith(
+      `Looper-${version}-Windows-arm64.zip`
+    ) ||
+    !x64Url?.pathname.endsWith(`Looper-${version}-Windows-x64.exe`) ||
+    !x64ZipUrl?.pathname.endsWith(`Looper-${version}-Windows-x64.zip`) ||
+    !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/.test(publishedAt) ||
+    !Number.isFinite(Date.parse(publishedAt)) ||
+    !artifactsShareManifestStore
+  ) {
+    return null;
+  }
+
+  return {
+    arm64Url,
+    arm64ZipUrl,
     publishedAt,
     version,
     x64Url,

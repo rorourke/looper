@@ -1,10 +1,5 @@
 export const applicationSettingsIpcChannels = {
   command: "application-settings:command",
-  getState: "application-settings:get-state",
-  openWindow: "application-settings:open-window",
-  preferenceChanged: "application-settings:preference-changed",
-  requestExportAll: "application-settings:request-export-all",
-  stateChanged: "application-settings:state-changed",
   updateMenuState: "application-settings:update-menu-state"
 } as const;
 
@@ -26,14 +21,10 @@ export type ApplicationSettingsCommand =
   | Readonly<{ startupView: ApplicationStartupView; type: "set-startup-view" }>
   | Readonly<{ theme: ApplicationTheme; type: "set-theme" }>
   | Readonly<{ type: "export-all-sheets" }>
+  | Readonly<{ type: "open-looper-menu" }>
   | Readonly<{ type: "show-admin-panel" }>
   | Readonly<{ type: "toggle-always-show-download-app-button" }>
   | Readonly<{ type: "sign-out" }>;
-
-export type ApplicationSettingsPreferenceChange =
-  | Readonly<{ decimalPlaces: number; type: "set-default-decimal-places" }>
-  | Readonly<{ startupView: ApplicationStartupView; type: "set-startup-view" }>
-  | Readonly<{ theme: ApplicationTheme; type: "set-theme" }>;
 
 export function isApplicationTheme(value: unknown): value is ApplicationTheme {
   return value === "dark" || value === "light" || value === "system";
@@ -68,21 +59,11 @@ export function isApplicationSettingsCommand(
   }
   return (
     command.type === "export-all-sheets" ||
+    command.type === "open-looper-menu" ||
     command.type === "show-admin-panel" ||
     command.type === "toggle-always-show-download-app-button" ||
     command.type === "sign-out"
   );
-}
-
-export function parseApplicationSettingsPreferenceChange(
-  value: unknown
-): ApplicationSettingsPreferenceChange | undefined {
-  return isApplicationSettingsCommand(value) &&
-    (value.type === "set-default-decimal-places" ||
-      value.type === "set-startup-view" ||
-      value.type === "set-theme")
-    ? value
-    : undefined;
 }
 
 export function parseApplicationSettingsMenuState(

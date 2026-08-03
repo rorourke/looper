@@ -22,6 +22,11 @@ test("runs the public site as an interactive, disposable demo", async () => {
   assert.match(app, /window\.looper = createBrowserLooperApi\(\)/);
   assert.match(app, /import looperWebIcon from "\.\.\/\.\.\/electron\/build\/icon\.ico"/);
   assert.match(app, /libraryIconSource:\s*looperWebIconSource/);
+  assert.match(
+    app,
+    /setDownloadPlatform\(downloadPlatformForUserAgent\(window\.navigator\.userAgent\)\)/
+  );
+  assert.match(app, /downloadPlatform,/);
   assert.match(app, /publicDemoMode: true/);
   assert.doesNotMatch(app + home + api, /SUPABASE|supabase|stripe|billing\/checkout/);
 
