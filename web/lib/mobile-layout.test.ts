@@ -4,6 +4,7 @@ import test from "node:test";
 
 const appCssUrl = new URL("../app/globals.css", import.meta.url);
 const appLayoutUrl = new URL("../app/layout.tsx", import.meta.url);
+const webAppUrl = new URL("../app/LooperWebApp.tsx", import.meta.url);
 const vercelIgnoreUrl = new URL("../../.vercelignore", import.meta.url);
 const sharedAppUrl = new URL(
   "../../electron/src/renderer/src/App.tsx",
@@ -157,13 +158,18 @@ test("turns the mobile library into a full-width marketing page", async () => {
 });
 
 test("extends the core mobile surface through the status bar without a header treatment", async () => {
-  const [appCss, appLayout, sharedApp] = await Promise.all([
+  const [appCss, appLayout, sharedApp, webApp] = await Promise.all([
     readFile(appCssUrl, "utf8"),
     readFile(appLayoutUrl, "utf8"),
-    readFile(sharedAppUrl, "utf8")
+    readFile(sharedAppUrl, "utf8"),
+    readFile(webAppUrl, "utf8")
   ]);
 
   assert.match(appLayout, /viewportFit:\s*"cover"/);
+  assert.match(
+    appLayout,
+    /themeColor:[\s\S]*color:\s*"#171717"[\s\S]*color:\s*"#f7f7f7"/
+  );
   const mobileStyles = appCss.slice(
     appCss.indexOf("@media (max-width: 767px)"),
     appCss.indexOf("@media (max-width: 767px) and (prefers-reduced-motion: reduce)")
@@ -181,6 +187,15 @@ test("extends the core mobile surface through the status bar without a header tr
     appCss,
     /\.looper-shell\[data-view-mode="library"\]::before\s*\{[^}]*content:\s*none;/s
   );
+  assert.match(
+    webApp,
+    /activeView === "library"\s*\? "--library-canvas-bg"\s*:\s*"--bg-editor-opaque"/
+  );
+  assert.match(
+    webApp,
+    /attributeFilter:\s*\["data-view-mode"\]/
+  );
+  assert.match(webApp, /root\.style\.backgroundColor = themeColor/);
   assert.doesNotMatch(mobileStyles, /\.looper-shell::after/);
   assert.match(sharedApp, /const handleLibraryScroll = useCallback\(/);
   assert.match(sharedApp, /onScroll=\{handleLibraryScroll\}/);

@@ -126,9 +126,14 @@ export function LooperWebApp() {
     let fallbackMeta: HTMLMetaElement | null = null;
 
     const updateThemeColor = (): void => {
+      const activeView = document.querySelector<HTMLElement>(".looper-shell")
+        ?.dataset.viewMode;
+      const surfaceProperty = activeView === "library"
+        ? "--library-canvas-bg"
+        : "--bg-editor-opaque";
       const themeColor = window
         .getComputedStyle(root)
-        .getPropertyValue("--bg-editor-opaque")
+        .getPropertyValue(surfaceProperty)
         .trim();
       if (!themeColor) return;
 
@@ -143,6 +148,7 @@ export function LooperWebApp() {
       }
 
       for (const meta of themeColorMetas) meta.content = themeColor;
+      root.style.backgroundColor = themeColor;
     };
 
     const themeObserver = new MutationObserver(updateThemeColor);
@@ -150,10 +156,19 @@ export function LooperWebApp() {
       attributeFilter: ["data-theme"],
       attributes: true
     });
+    const shell = document.querySelector<HTMLElement>(".looper-shell");
+    const viewObserver = new MutationObserver(updateThemeColor);
+    if (shell) {
+      viewObserver.observe(shell, {
+        attributeFilter: ["data-view-mode"],
+        attributes: true
+      });
+    }
     updateThemeColor();
 
     return () => {
       themeObserver.disconnect();
+      viewObserver.disconnect();
       fallbackMeta?.remove();
     };
   }, []);
