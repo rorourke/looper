@@ -268,11 +268,28 @@ fi
 verify_installer_app() {
   local app_bundle="$1"
   local architectures
+  local expected_installer_bundle_identifier
+  local installer_bundle_identifier
   local signing_details
   local installer_team_identifier
+  local installer_version
 
   if [ ! -d "$app_bundle" ]; then
     echo "No packaged Install Looper.app bundle was found at $app_bundle." >&2
+    exit 1
+  fi
+
+  installer_version="$(
+    /usr/libexec/PlistBuddy -c "Print :CFBundleShortVersionString" \
+      "$app_bundle/Contents/Info.plist"
+  )"
+  installer_bundle_identifier="$(
+    /usr/libexec/PlistBuddy -c "Print :CFBundleIdentifier" \
+      "$app_bundle/Contents/Info.plist"
+  )"
+  expected_installer_bundle_identifier="com.nickbolton.looper.installer.release-${installer_version//./-}"
+  if [ "$installer_bundle_identifier" != "$expected_installer_bundle_identifier" ]; then
+    echo "$app_bundle has installer bundle identifier $installer_bundle_identifier; expected $expected_installer_bundle_identifier." >&2
     exit 1
   fi
 

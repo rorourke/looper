@@ -51,6 +51,10 @@ VERSION="$(
   ' "$ROOT_DIR/electron/package.json"
 )"
 BUILD_NUMBER="$VERSION"
+# Launch Services treats matching bundle identifiers as the same application.
+# Give every release a distinct identity so opening a new installer cannot
+# silently reactivate an older installer that is still running.
+INSTALLER_BUNDLE_IDENTIFIER="com.nickbolton.looper.installer.release-${VERSION//./-}"
 ARTIFACT_PATH="$OUTPUT_DIR/Looper-Installer-$VERSION.dmg"
 if [ "$MODE" = "preview" ]; then
   APP_OUTPUT_DIR="$OUTPUT_DIR/installer-preview"
@@ -145,6 +149,8 @@ assemble_app() {
   plutil -replace CFBundleShortVersionString -string "$VERSION" \
     "$STAGED_APP/Contents/Info.plist"
   plutil -replace CFBundleVersion -string "$BUILD_NUMBER" \
+    "$STAGED_APP/Contents/Info.plist"
+  plutil -replace CFBundleIdentifier -string "$INSTALLER_BUNDLE_IDENTIFIER" \
     "$STAGED_APP/Contents/Info.plist"
   plutil -lint "$STAGED_APP/Contents/Info.plist"
 
