@@ -51,7 +51,9 @@ describe("local development encryption fallback", () => {
       const key = await readFile(keyPath);
       const metadata = await stat(keyPath);
       assert.equal(key.byteLength, 32);
-      assert.equal(metadata.mode & 0o077, 0);
+      if (process.getuid !== undefined) {
+        assert.equal(metadata.mode & 0o077, 0);
+      }
     } finally {
       await rm(directory, { force: true, recursive: true });
     }
@@ -86,7 +88,11 @@ describe("local development encryption fallback", () => {
     }
   });
 
-  test("rejects a fallback key that is accessible to other users", async () => {
+  test("rejects a fallback key that is accessible to other users", async (t) => {
+    if (process.getuid === undefined) {
+      t.skip("requires POSIX permissions");
+      return;
+    }
     const directory = await mkdtemp(join(tmpdir(), "looper-local-encryption-"));
     const keyPath = join(directory, ".key");
     try {

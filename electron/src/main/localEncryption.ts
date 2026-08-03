@@ -94,8 +94,8 @@ class LocalEncryptionKey {
       if (
         !metadata.isFile() ||
         metadata.size !== localEncryptionKeyBytes ||
-        (currentUid !== undefined && metadata.uid !== currentUid) ||
-        (metadata.mode & 0o077) !== 0
+        (currentUid !== undefined &&
+          (metadata.uid !== currentUid || (metadata.mode & 0o077) !== 0))
       ) {
         throw new Error("Local encryption key permissions are invalid.");
       }

@@ -10,7 +10,7 @@ import test from "node:test";
 const execFileAsync = promisify(execFile);
 const require = createRequire(import.meta.url);
 
-test("the macOS after-pack hook removes Electron Builder's broad ATS exception", async () => {
+test("macOS packages register the restrictive ATS after-pack hook", async () => {
   const packageJson = JSON.parse(
     await readFile(new URL("../../package.json", import.meta.url), "utf8")
   );
@@ -18,7 +18,11 @@ test("the macOS after-pack hook removes Electron Builder's broad ATS exception",
     packageJson.build?.afterPack,
     "build/restrictMacTransportSecurity.cjs"
   );
+});
 
+test("the macOS after-pack hook removes Electron Builder's broad ATS exception", {
+  skip: process.platform === "darwin" ? false : "requires macOS plutil"
+}, async () => {
   const temporaryDirectory = await mkdtemp(
     join(tmpdir(), "looper-package-security-")
   );
