@@ -1099,6 +1099,10 @@
     background: var(--library-canvas-bg);
   }
 
+  :root[data-platform="web"] .document-library.public-demo-library {
+    padding-bottom: calc(24px + env(safe-area-inset-bottom));
+  }
+
   :root[data-platform="web"] .mobile-marketing-library {
     width: 100%;
     max-width: 800px;
@@ -1118,6 +1122,10 @@
   :root[data-platform="web"] .public-website-footer-content {
     justify-content: center;
     text-align: center;
+  }
+
+  :root[data-platform="web"] .public-website-footer-content > span {
+    display: none;
   }
 
   :root[data-platform="web"] .mobile-marketing-intro {
