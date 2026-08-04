@@ -672,17 +672,15 @@ function revisionFifteenDocuments() {
 }
 
 describe("Getting Started example gallery", () => {
-  test("bundles the ten-part learning path before the ten templates", () => {
+  test("bundles the eight-part learning path before the ten templates", () => {
     const documents = createGettingStartedDocuments("2026-07-18T00:00:00.000Z");
     const expectedTitles = [
       "The Loop Keyword",
       "Math with Variables",
-      "Readable Numbers",
       "Global Variables",
       "Live Stock Prices",
       "Sum Section",
       "Functions",
-      "Recurring Calculations",
       "Advanced Loops",
       "Fancy Math",
       "Compound Interest",
@@ -871,11 +869,6 @@ describe("Getting Started example gallery", () => {
       Array.from({ length: 12 }, (_, index) => 2_075 * (index + 1))
     );
 
-    const readableNumbers = evaluationFor("Readable Numbers");
-    assert.deepEqual(values(readableNumbers, "cash_needed"), [500_000]);
-    assert.deepEqual(values(readableNumbers, "loan_amount"), [2_000_000]);
-    assert.deepEqual(values(readableNumbers, "annual_interest"), [125_000]);
-
     const marketDetails = evaluationFor("Live Stock Prices");
     assert.deepEqual(values(marketDetails, "apple"), [215]);
     assert.deepEqual(values(marketDetails, "microsoft"), [450]);
@@ -887,18 +880,6 @@ describe("Getting Started example gallery", () => {
     assert.equal(values(functions, "loan_a_lifetime_paid").at(-1), 412_500);
     assert.equal(values(functions, "loan_b_lifetime_paid").at(-1), 375_000);
     assert.equal(values(functions, "lifetime_delta").at(-1), 37_500);
-
-    const recurring = evaluationFor("Recurring Calculations");
-    const recurringBalances: number[] = [];
-    for (let index = 0; index < 8; index += 1) {
-      recurringBalances.push((recurringBalances.at(-1) ?? 0) * 1.01 + 100);
-    }
-    recurringBalances.forEach((expected, index) =>
-      approximately(values(recurring, "balance")[index], expected)
-    );
-    [0, ...recurringBalances.slice(0, -1)].forEach((expected, index) =>
-      approximately(values(recurring, "prior_balance")[index], expected)
-    );
 
     const sections = evaluationFor("Sum Section");
     assert.deepEqual(values(sections, "total"), [900]);
@@ -1056,19 +1037,12 @@ describe("Getting Started example gallery", () => {
     assert.match(source, /^balance = starting_balance \+ monthly_savings \* loop$/m);
     assert.match(source, /^monthly_bills = rent \+ utilities \+ internet$/m);
     assert.match(source, /^year_to_date = monthly_bills \* \(loop \+ 1\)$/m);
-    assert.match(source, /^home_price = \$2\.5M$/m);
-    assert.match(source, /^down_payment = 20%$/m);
-    assert.match(source, /^annual_interest = loan_amount \* annual_rate$/m);
     assert.match(source, /monthlyInterest\(rate, loan\) \{ loan \* \(rate \/ 12\) \}/);
     assert.match(source, /^loan_a_lifetime_paid = loan_a_monthly \* \(loop \+ 1\)$/m);
     assert.match(source, /^loan_b_lifetime_paid = loan_b_monthly \* \(loop \+ 1\)$/m);
     assert.match(
       source,
       /^lifetime_delta = loan_a_lifetime_paid - loan_b_lifetime_paid$/m
-    );
-    assert.match(
-      source,
-      /^balance = loop\.previous\(balance\) \* \(1 \+ weekly_growth\) \+ weekly_deposit$/m
     );
     assert.match(source, /^total = sumsection$/m);
     assert.match(source, /^average = avgsection$/m);
@@ -3000,7 +2974,7 @@ total = sumsection`,
     );
   });
 
-  test("adds two basics and five templates to a revision-fifty-three gallery", () => {
+  test("adds five templates to a revision-fifty-three gallery", () => {
     const additions = gettingStartedExamples.filter(
       (example) => example.introducedRevision === 54
     );
@@ -3014,10 +2988,6 @@ total = sumsection`,
       createStubs
     );
 
-    assert.equal(
-      additions.filter((example) => example.section === "learn").length,
-      2
-    );
     assert.equal(
       additions.filter((example) => example.section === "template").length,
       5

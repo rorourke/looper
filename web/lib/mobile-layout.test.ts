@@ -155,7 +155,7 @@ test("turns the mobile library into a full-width marketing page", async () => {
   );
   assert.match(
     appCss,
-    /@media \(min-width:\s*768px\)\s*\{[^}]*\.document-library\.public-demo-library\s*\{[^}]*padding-bottom:\s*24px;/s
+    /@media \(min-width:\s*768px\)\s*\{[\s\S]*?\.document-library\.public-demo-library\s*\{[^}]*padding-bottom:\s*24px;/s
   );
   assert.match(
     appCss,
@@ -175,7 +175,7 @@ test("turns the mobile library into a full-width marketing page", async () => {
   );
   assert.match(
     appCss,
-    /@media \(max-width:\s*767px\)[\s\S]*?\.mobile-marketing-intro\s*\{[^}]*padding:\s*22px 0 0;/
+    /@media \(max-width:\s*767px\)[\s\S]*?\.mobile-marketing-intro\s*\{[^}]*padding:\s*12px 0 0;/
   );
   assert.match(
     appCss,
@@ -368,5 +368,42 @@ test("lets Safari scroll the mobile library beneath its floating chrome", async 
   assert.match(
     appCss,
     /\.native-editor-panel \.editor-input\s*\{[^}]*padding-bottom:[^}]*var\(--mobile-browser-ui-offset\)[^}]*overscroll-behavior-y:\s*auto;/s
+  );
+});
+
+test("lets the desktop public demo use the browser document scroller", async () => {
+  const appCss = await readFile(appCssUrl, "utf8");
+
+  assert.match(
+    appCss,
+    /@media \(min-width:\s*768px\)[\s\S]*?:root\[data-platform="web"\]:has\(\.document-library\.public-demo-library\) body\s*\{[^}]*overflow-x:\s*hidden;[^}]*overflow-y:\s*auto;/s
+  );
+  assert.match(
+    appCss,
+    /\.looper-shell\[data-view-mode="library"\]:has\([\s\S]*?> \.document-library\.public-demo-library[\s\S]*?\)\s*\{[^}]*--titlebar-height:\s*0px;[^}]*height:\s*auto;[^}]*min-height:\s*100vh;[^}]*overflow:\s*visible;/s
+  );
+  assert.match(
+    appCss,
+    /> \.native-titlebar\s*\{[^}]*display:\s*none;/s
+  );
+  assert.match(
+    appCss,
+    /\)::before\s*\{[^}]*content:\s*none;/s
+  );
+  assert.match(
+    appCss,
+    /\.document-library\.public-demo-library\s*\{[^}]*height:\s*auto;[^}]*min-height:\s*100vh;[^}]*overflow:\s*visible;[^}]*padding-top:\s*28px;/s
+  );
+  assert.match(
+    appCss,
+    /\.public-demo-library[\s\S]*?\.library-divider[\s\S]*?\+ \.getting-started-section[\s\S]*?\.getting-started-title\s*\{[^}]*padding-top:\s*31px;/s
+  );
+  assert.match(
+    appCss,
+    /@media \(min-width:\s*768px\)[\s\S]*?\.public-website-footer-content\s*\{[^}]*justify-content:\s*center;/s
+  );
+  assert.match(
+    appCss,
+    /@media \(min-width:\s*768px\)[\s\S]*?\.public-website-footer-pill\s*\{[^}]*padding-right:\s*13px;[^}]*padding-left:\s*13px;/s
   );
 });
