@@ -3,34 +3,15 @@ import { readFile } from "node:fs/promises";
 import test from "node:test";
 
 const webCssUrl = new URL("../app/globals.css", import.meta.url);
-const sharedAppUrl = new URL("../../electron/src/renderer/src/App.tsx", import.meta.url);
 
-test("fades in a density-aware outside web main-menu hairline only after scrolling", async () => {
-  const [webCss, sharedApp] = await Promise.all([
-    readFile(webCssUrl, "utf8"),
-    readFile(sharedAppUrl, "utf8")
-  ]);
+test("keeps the desktop web library header seamless while contents scroll", async () => {
+  const webCss = await readFile(webCssUrl, "utf8");
 
+  assert.doesNotMatch(webCss, /--web-header-hairline-width/);
+  assert.doesNotMatch(webCss, /\[data-library-scrolled="true"\]::before/);
   assert.match(
     webCss,
-    /:root\[data-platform="web"\]\s*\{[^}]*--web-header-hairline-width:\s*1px;/s
-  );
-  assert.match(
-    webCss,
-    /@media \(-webkit-min-device-pixel-ratio: 2\), \(min-resolution: 2dppx\)\s*\{[\s\S]*:root\[data-platform="web"\]\s*\{[^}]*--web-header-hairline-width:\s*0\.5px;/s
-  );
-  assert.match(
-    webCss,
-    /@media \(min-width: 768px\)[\s\S]*\.looper-shell\[data-view-mode="library"\]::before\s*\{[^}]*height:\s*var\(--titlebar-height\);[^}]*border-bottom:\s*0;[^}]*background:\s*var\(--library-canvas-bg\);[^}]*box-shadow:\s*0 var\(--web-header-hairline-width\) 0 transparent;[^}]*transition:\s*box-shadow 160ms ease;/s
-  );
-  assert.match(
-    webCss,
-    /\.looper-shell\[data-view-mode="library"\]\[data-library-scrolled="true"\]::before\s*\{[^}]*box-shadow:\s*0 var\(--web-header-hairline-width\) 0 var\(--divider-content\);/s
-  );
-  assert.match(sharedApp, /setIsLibraryScrolled\(event\.currentTarget\.scrollTop > 0\)/);
-  assert.match(
-    sharedApp,
-    /data-library-scrolled=\{isLibraryScrolled \? "true" : undefined\}/
+    /@media \(min-width: 768px\)[\s\S]*\.looper-shell\[data-view-mode="library"\]::before\s*\{[^}]*height:\s*var\(--titlebar-height\);[^}]*border-bottom:\s*0;[^}]*background:\s*var\(--library-canvas-bg\);[^}]*box-shadow:\s*none;[^}]*transition:\s*none;/s
   );
 });
 
