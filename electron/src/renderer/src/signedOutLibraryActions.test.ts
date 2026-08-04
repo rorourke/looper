@@ -118,7 +118,7 @@ test("lays out the signed-out actions as a short horizontal card row", async () 
   assert.doesNotMatch(styles, /\.signed-out-create-sheet-action(?:\s|:)*\{/);
 });
 
-test("centers the divider between the preceding content and Looper Basics", async () => {
+test("optically balances the divider between the preceding content and Looper Basics", async () => {
   const styles = await readFile(stylesUrl, "utf8");
 
   assert.match(
@@ -139,11 +139,15 @@ test("centers the divider between the preceding content and Looper Basics", asyn
   );
   assert.match(
     styles,
-    /\.signed-out-library-actions \+ \.library-divider\s*\{[^}]*margin-top:\s*6px;/s
+    /\.signed-out-library-actions \+ \.library-divider\s*\{[^}]*margin-top:\s*22px;/s
   );
   assert.match(
     styles,
-    /\.document-grid \+ \.library-divider\s*\{[^}]*margin-top:\s*24px;/s
+    /\.document-grid \+ \.library-divider\s*\{[^}]*margin-top:\s*40px;/s
+  );
+  assert.match(
+    styles,
+    /\.library-divider \+ \.getting-started-section \.getting-started-title\s*\{[^}]*padding-top:\s*30px;/s
   );
 });
 
@@ -165,12 +169,12 @@ test("uses a wavy divider before Looper Basics", async () => {
   );
 });
 
-test("uses the same centered divider spacing after user sheets", async () => {
+test("uses the same optical divider spacing after user sheets", async () => {
   const styles = await readFile(stylesUrl, "utf8");
 
   assert.match(
     styles,
-    /\.document-grid \+ \.library-divider\s*\{[^}]*margin-top:\s*24px;/s
+    /\.document-grid \+ \.library-divider\s*\{[^}]*margin-top:\s*40px;/s
   );
 });
 

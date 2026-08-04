@@ -3110,11 +3110,11 @@ body:has(.looper-shell[data-view-mode="library"]),
 }
 
 .signed-out-library-actions + .library-divider {
-  margin-top: 6px;
+  margin-top: 22px;
 }
 
 .document-grid + .library-divider {
-  margin-top: 24px;
+  margin-top: 40px;
 }
 
 .getting-started-section {
@@ -3145,6 +3145,10 @@ body:has(.looper-shell[data-view-mode="library"]),
   font-size: 20px;
   font-weight: 600;
   line-height: 1.25;
+}
+
+.library-divider + .getting-started-section .getting-started-title {
+  padding-top: 30px;
 }
 
 .getting-started-grid {
