@@ -167,6 +167,11 @@ test("uses a wavy divider before Looper Basics", async () => {
     styles,
     /\.library-divider\s*\{[^}]*height:\s*9px;[^}]*flex:\s*0 0 9px;[^}]*mask-image:\s*url\("data:image\/svg\+xml,[^"]+"\);[^}]*mask-repeat:\s*repeat-x;[^}]*mask-size:\s*22px 9px;[^}]*-webkit-mask-image:/s
   );
+  assert.equal(
+    styles.match(/stroke-linecap='square'/g)?.length,
+    2,
+    "both mask variants should overlap their tile edges without visible seams"
+  );
 });
 
 test("uses the same optical divider spacing after user sheets", async () => {
