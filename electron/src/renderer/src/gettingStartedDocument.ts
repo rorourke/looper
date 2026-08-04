@@ -1,7 +1,7 @@
 import { visibleLooperText, type LooperDocumentData } from "./looperEngine.ts";
 
 export const LEGACY_GETTING_STARTED_DOCUMENT_ID = "builtin-getting-started";
-export const GETTING_STARTED_TEMPLATE_REVISION = 54;
+export const GETTING_STARTED_TEMPLATE_REVISION = 55;
 export const GETTING_STARTED_TEMPLATE_REVISION_STORAGE_KEY =
   "looper.gettingStartedTemplateRevision";
 
@@ -71,26 +71,6 @@ utilities = $200
 internet = $75
 monthly_bills = rent + utilities + internet
 year_to_date = monthly_bills * (loop + 1)`
-  },
-  {
-    id: "builtin-example-readable-numbers",
-    section: "learn",
-    title: "Readable Numbers",
-    subtitle: "Use currencies, percentages, and k/M shortcuts",
-    loopCount: 0,
-    loopPeriod: "None",
-    isLoopEnabled: false,
-    isLoopVariablePublished: false,
-    isSidebarOpenByDefault: false,
-    publishedVariableNames: ["cash_needed", "loan_amount", "annual_interest"],
-    introducedRevision: 54,
-    text: `Readable numbers:
-home_price = $2.5M
-down_payment = 20%
-cash_needed = home_price * down_payment
-loan_amount = home_price - cash_needed
-annual_rate = 6.25%
-annual_interest = loan_amount * annual_rate`
   },
   {
     id: "builtin-example-global-variables",
@@ -183,24 +163,6 @@ loan_b_monthly = monthlyInterest(3%, $2.5M)
 loan_a_lifetime_paid = loan_a_monthly * (loop + 1)
 loan_b_lifetime_paid = loan_b_monthly * (loop + 1)
 lifetime_delta = loan_a_lifetime_paid - loan_b_lifetime_paid`
-  },
-  {
-    id: "builtin-example-recurring-calculations",
-    section: "learn",
-    title: "Recurring Calculations",
-    subtitle: "Build each value from the previous loop",
-    loopCount: 7,
-    loopPeriod: "Week",
-    isLoopEnabled: true,
-    isLoopVariablePublished: false,
-    isSidebarOpenByDefault: true,
-    publishedVariableNames: ["balance", "prior_balance"],
-    introducedRevision: 54,
-    text: `Recurring calculations:
-weekly_deposit = $100
-weekly_growth = 1%
-balance = loop.previous(balance) * (1 + weekly_growth) + weekly_deposit
-prior_balance = loop.previous(balance)`
   },
   {
     id: "builtin-example-advanced-loops",
@@ -548,6 +510,8 @@ TOTAL = LOT + SOFT + HARD + FFE + CONTINGENCY`
 export type GettingStartedExampleId = (typeof gettingStartedExamples)[number]["id"];
 
 export const retiredGettingStartedExampleIds = [
+  "builtin-example-readable-numbers",
+  "builtin-example-recurring-calculations",
   "builtin-example-household-budget",
   "builtin-example-mortgage-comparison",
   "builtin-example-product-launch-profit",
