@@ -156,7 +156,7 @@ test("turns the mobile library into a full-width marketing page", async () => {
   );
   assert.match(
     appCss,
-    /@media \(max-width:\s*767px\)[\s\S]*?\.mobile-marketing-intro h1\s*\{[^}]*padding-inline:\s*2px;/
+    /@media \(max-width:\s*767px\)[\s\S]*?\.mobile-marketing-intro h1\s*\{[^}]*padding-inline:\s*4px;/
   );
   assert.match(
     appCss,

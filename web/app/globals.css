@@ -1140,7 +1140,7 @@
   }
 
   :root[data-platform="web"] .mobile-marketing-intro h1 {
-    padding-inline: 2px;
+    padding-inline: 4px;
     margin: 0;
     color: var(--library-hero-secondary);
     font-size: clamp(22px, 6.2vw, 27px);
