@@ -3110,13 +3110,11 @@ body:has(.looper-shell[data-view-mode="library"]),
 }
 
 .signed-out-library-actions + .library-divider {
-  margin-top: 32px;
+  margin-top: 6px;
 }
 
-:root[data-platform="darwin"] .document-grid + .library-divider,
-:root[data-platform="win32"] .document-grid + .library-divider,
-:root[data-platform="linux"] .document-grid + .library-divider {
-  margin-top: 32px;
+.document-grid + .library-divider {
+  margin-top: 24px;
 }
 
 .getting-started-section {

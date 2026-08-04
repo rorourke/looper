@@ -118,7 +118,7 @@ test("lays out the signed-out actions as a short horizontal card row", async () 
   assert.doesNotMatch(styles, /\.signed-out-create-sheet-action(?:\s|:)*\{/);
 });
 
-test("balances the marketing actions between the hero and divider", async () => {
+test("centers the divider between the preceding content and Looper Basics", async () => {
   const styles = await readFile(stylesUrl, "utf8");
 
   assert.match(
@@ -135,7 +135,15 @@ test("balances the marketing actions between the hero and divider", async () => 
   );
   assert.match(
     styles,
-    /\.signed-out-library-actions \+ \.library-divider\s*\{[^}]*margin-top:\s*32px;/s
+    /\.signed-out-library-actions\s*\{[^}]*margin:\s*0 auto 18px;/s
+  );
+  assert.match(
+    styles,
+    /\.signed-out-library-actions \+ \.library-divider\s*\{[^}]*margin-top:\s*6px;/s
+  );
+  assert.match(
+    styles,
+    /\.document-grid \+ \.library-divider\s*\{[^}]*margin-top:\s*24px;/s
   );
 });
 
@@ -157,12 +165,12 @@ test("uses a wavy divider before Looper Basics", async () => {
   );
 });
 
-test("adds optical spacing between user sheets and the first divider", async () => {
+test("uses the same centered divider spacing after user sheets", async () => {
   const styles = await readFile(stylesUrl, "utf8");
 
   assert.match(
     styles,
-    /:root\[data-platform="darwin"\] \.document-grid \+ \.library-divider,[\s\S]*:root\[data-platform="win32"\] \.document-grid \+ \.library-divider,[\s\S]*:root\[data-platform="linux"\] \.document-grid \+ \.library-divider\s*\{[^}]*margin-top:\s*32px;/s
+    /\.document-grid \+ \.library-divider\s*\{[^}]*margin-top:\s*24px;/s
   );
 });
 
