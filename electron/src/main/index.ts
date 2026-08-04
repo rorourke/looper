@@ -143,6 +143,8 @@ const updateChannel =
   process.env.MAIN_VITE_UPDATE_CHANNEL;
 const { autoUpdater } = electronUpdater;
 const minimumUpdateProgressPresentationMs = 800;
+const updateDownloadFailureMessage =
+  "Looper couldn't download the update. Check your internet connection and try again.";
 nativeTheme.themeSource = "system";
 let mainWindow: BrowserWindow | undefined;
 let cloudAccountService: CloudAccountService | undefined;
@@ -1303,7 +1305,7 @@ function setWindowsClientSpoofEnabled(enabled: boolean): void {
   );
 }
 
-function installDownloadedAppUpdate(): boolean {
+async function installDownloadedAppUpdate(): Promise<boolean> {
   const state = presentedAppUpdateState();
   if (state.status !== "available") {
     throw new Error("No Looper update is available to download.");
@@ -1312,21 +1314,30 @@ function installDownloadedAppUpdate(): boolean {
 
   appUpdateDownloadStartedAt = Date.now();
   actualAppUpdateState = {
-    ...state,
+    preview: false,
     progress: 0,
+    releaseName: state.releaseName,
     status: "downloading"
   };
   broadcastAppUpdateState();
-  void autoUpdater.downloadUpdate().catch((error) => {
+  try {
+    await autoUpdater.downloadUpdate();
+  } catch (error) {
     if (actualAppUpdateState.status === "downloading") {
-      actualAppUpdateState = state;
+      actualAppUpdateState = {
+        errorMessage: updateDownloadFailureMessage,
+        preview: false,
+        releaseName: state.releaseName,
+        status: "available"
+      };
       broadcastAppUpdateState();
     }
     console.warn(
       "Could not download the Looper update.",
       error instanceof Error ? error.message : error
     );
-  });
+    throw new Error(updateDownloadFailureMessage);
+  }
   return true;
 }
 
@@ -1755,6 +1766,7 @@ async function startApplicationUpdates(): Promise<void> {
     onError: (error) => {
       if (actualAppUpdateState.status === "downloading") {
         actualAppUpdateState = {
+          errorMessage: updateDownloadFailureMessage,
           preview: false,
           releaseName: actualAppUpdateState.releaseName,
           status: "available"

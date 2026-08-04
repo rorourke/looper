@@ -9142,7 +9142,9 @@ export function App({ configuration }: AppProps = {}): ReactElement {
             appUpdateState.status === "available"
               ? appUpdateState.preview
                 ? "Preview Update App button"
-                : `Download and install ${appUpdateState.releaseName}`
+                : appUpdateState.errorMessage
+                  ? `Retry downloading and installing ${appUpdateState.releaseName}`
+                  : `Download and install ${appUpdateState.releaseName}`
               : appUpdateState.status === "installing"
                 ? `Installing ${appUpdateState.releaseName}; Looper will restart`
                 : `Downloading ${appUpdateState.releaseName}, ${Math.round(appUpdateState.progress)} percent`
@@ -9158,12 +9160,18 @@ export function App({ configuration }: AppProps = {}): ReactElement {
             appUpdateState.preview
               ? "Preview the update download animation"
               : appUpdateState.status === "available"
-                ? `${appUpdateState.releaseName} is ready to download`
+                ? appUpdateState.errorMessage ??
+                  `${appUpdateState.releaseName} is ready to download`
                 : "Looper will restart automatically when the update is ready"
           }
           type="button"
         >
-          <span className="app-update-label">Update App</span>
+          <span className="app-update-label">
+            {appUpdateState.status === "available" &&
+            appUpdateState.errorMessage
+              ? "Retry Update"
+              : "Update App"}
+          </span>
           <span aria-hidden="true" className="app-update-progress">
             <svg className="app-update-progress-ring" viewBox="0 0 24 24">
               <circle

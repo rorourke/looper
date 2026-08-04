@@ -7,6 +7,7 @@ export const appUpdateIpcChannels = {
 export type AppUpdateState =
   | Readonly<{ status: "idle" }>
   | Readonly<{
+      errorMessage?: string;
       preview: boolean;
       releaseName: string;
       status: "available";
@@ -29,7 +30,13 @@ export function isAppUpdateState(value: unknown): value is AppUpdateState {
     typeof state.releaseName === "string" &&
     state.releaseName.trim().length > 0;
   if (!hasUpdateIdentity) return false;
-  if (state.status === "available") return true;
+  if (state.status === "available") {
+    return (
+      state.errorMessage === undefined ||
+      (typeof state.errorMessage === "string" &&
+        state.errorMessage.trim().length > 0)
+    );
+  }
   return (
     (state.status === "downloading" || state.status === "installing") &&
     typeof state.progress === "number" &&

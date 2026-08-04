@@ -79,6 +79,12 @@
       "hardenedRuntime": true,
       "icon": "build/icon.icon",
       "minimumSystemVersion": "13.0",
+      "publish": [
+        {
+          "provider": "generic",
+          "url": "https://nvs3k3uv7zi86ha8.public.blob.vercel-storage.com/releases/macos"
+        }
+      ],
       "extendInfo": {
         "NSAppTransportSecurity": {
           "NSAllowsArbitraryLoads": false

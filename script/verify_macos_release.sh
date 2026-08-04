@@ -4,6 +4,7 @@ set -euo pipefail
 EXPECTED_ARCHITECTURE="${1:-all}"
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 RELEASE_DIR="$ROOT_DIR/electron/release"
+EXPECTED_UPDATE_FEED_URL="https://nvs3k3uv7zi86ha8.public.blob.vercel-storage.com/releases/macos"
 
 case "$EXPECTED_ARCHITECTURE" in
   all|arm64|x64)
@@ -18,6 +19,50 @@ mapfile_command() {
   while IFS= read -r line; do
     printf '%s\0' "$line"
   done
+}
+
+verify_update_config() {
+  local app_bundle="$1"
+  local update_config="$app_bundle/Contents/Resources/app-update.yml"
+
+  if [ ! -f "$update_config" ] || [ -L "$update_config" ]; then
+    echo "$app_bundle is missing a regular app-update.yml file." >&2
+    exit 1
+  fi
+
+  node - "$update_config" "$EXPECTED_UPDATE_FEED_URL" <<'NODE'
+const { readFileSync } = require("node:fs");
+
+const configPath = process.argv[2];
+const expectedUrl = process.argv[3];
+const entries = new Map();
+for (const line of readFileSync(configPath, "utf8").split(/\r?\n/)) {
+  const match = /^([A-Za-z][A-Za-z0-9]*):\s*(.*?)\s*$/.exec(line);
+  if (!match) continue;
+  let value = match[2];
+  if (
+    value.length >= 2 &&
+    ((value.startsWith('"') && value.endsWith('"')) ||
+      (value.startsWith("'") && value.endsWith("'")))
+  ) {
+    value = value.slice(1, -1);
+  }
+  entries.set(match[1], value);
+}
+
+const expected = {
+  provider: "generic",
+  updaterCacheDirName: "looper-electron-updater",
+  url: expectedUrl
+};
+for (const [key, value] of Object.entries(expected)) {
+  if (entries.get(key) !== value) {
+    throw new Error(
+      `${configPath} has ${key}=${JSON.stringify(entries.get(key))}; expected ${JSON.stringify(value)}.`
+    );
+  }
+}
+NODE
 }
 
 app_bundles=()
@@ -109,6 +154,7 @@ for app_bundle in "${app_bundles[@]}"; do
     echo "$app_bundle is missing the Squirrel.Mac loopback ATS exception." >&2
     exit 1
   fi
+  verify_update_config "$app_bundle"
   app_entitlements="$(codesign -d --entitlements :- "$app_bundle" 2>&1)"
   if ! grep -q "com.apple.security.cs.allow-jit" <<<"$app_entitlements"; then
     echo "$app_bundle is missing the Electron JIT entitlement." >&2
@@ -247,6 +293,7 @@ while IFS= read -r -d '' zip_path; do
     echo "$zip_name contains Looper $zip_version, expected $expected_version." >&2
     exit 1
   fi
+  verify_update_config "$zip_app"
 
   lipo "$zip_app/Contents/MacOS/Looper" \
     -verify_arch "$expected_zip_architecture"
