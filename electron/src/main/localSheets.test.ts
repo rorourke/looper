@@ -4,11 +4,20 @@ import { join } from "node:path";
 import { tmpdir } from "node:os";
 import test from "node:test";
 import {
+  defaultLocalSheetDirectoryPath,
   LocalSheetStore,
   SheetStorageSettingsStore
 } from "./localSheets.ts";
 
 const sheetId = "11111111-1111-4111-8111-111111111111";
+
+test("new local sheets default inside Looper's unprotected app data", () => {
+  const userDataPath = join(tmpdir(), "Looper");
+  assert.equal(
+    defaultLocalSheetDirectoryPath(userDataPath),
+    join(userDataPath, "sheets")
+  );
+});
 
 test("local sheets use standalone .loop files and optimistic revisions", async () => {
   const root = await mkdtemp(join(tmpdir(), "looper-local-sheets-"));

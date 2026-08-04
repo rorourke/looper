@@ -30,11 +30,13 @@ Looper is an open-source notebook calculator for Mac and Windows. Write calculat
 
 ## Your sheets are files
 
-Looper stores each sheet as a portable `.loop` JSON file. The default location is `Documents/Looper`.
+Looper stores each sheet as a portable `.loop` JSON file. New installs begin in Looper's application-data folder so startup never depends on a protected or cloud-backed Documents directory.
 
 The centered **Looper** menu provides **Open File…**, **Source Folder**, and **Show Source in Finder/File Explorer**. You can import an existing sheet by opening a file or dragging a `.loop` file anywhere onto the app window; Looper copies the imported sheet into the active library folder.
 
 Changing the folder switches Looper to the `.loop` files already in the selected location. Existing files remain in their original folder, so move or copy them yourself when you want to migrate a library.
+
+Existing configured source folders remain unchanged after an update. If you reset Looper's app settings and need to reconnect an older `Documents/Looper` library, choose that folder again with **Source Folder**.
 
 Bundled basics and templates are read-only examples in the app. Duplicating one creates a normal `.loop` file in your selected folder.
 

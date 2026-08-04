@@ -21,7 +21,11 @@ test("promotes local files to the desktop product default", async () => {
     readFile(mainSourceUrl, "utf8")
   ]);
 
-  assert.match(main, /join\(app\.getPath\("documents"\), "Looper"\)/);
+  assert.match(
+    main,
+    /defaultLocalSheetDirectoryPath\(app\.getPath\("userData"\)\)/
+  );
+  assert.doesNotMatch(main, /join\(app\.getPath\("documents"\), "Looper"\)/);
   assert.match(main, /rawProvider !== "local"/);
   assert.match(main, /stores sheets locally in the open-source desktop app/);
   assert.match(app, /const localOnlyMode = true/);

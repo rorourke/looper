@@ -6,6 +6,7 @@ import {
   ipcMain,
   Menu,
   MenuItem,
+  autoUpdater as nativeAutoUpdater,
   nativeTheme,
   net,
   protocol,
@@ -73,7 +74,9 @@ import {
   shouldStartMacAppUpdates,
   startMacAppUpdates
 } from "./appUpdates";
+import { armMacUpdateExitWatchdog } from "./updateShutdown";
 import {
+  defaultLocalSheetDirectoryPath,
   LocalSheetStore,
   SheetStorageSettingsStore
 } from "./localSheets";
@@ -170,6 +173,8 @@ let updateButtonPreviewEnabled = false;
 let windowsClientSpoofEnabled = false;
 let actualAppUpdateState: AppUpdateState = idleAppUpdateState;
 let appUpdateDownloadStartedAt = 0;
+let appUpdateExitWatchdogArmed = false;
+let appUpdateExitWatchdogRegistered = false;
 let applicationSettingsMenuState: ApplicationSettingsMenuState = {
   alwaysShowDownloadAppButton: false,
   defaultDecimalPlaces: 2,
@@ -566,8 +571,8 @@ async function getLocalSheetStorageSettings(): Promise<SheetStorageSettings> {
   const settingsStore = getSheetStorageSettingsStore();
   const current = await settingsStore.getSettings();
   const localDirectoryPath =
-    current.localDirectoryPath ?? join(app.getPath("documents"), "Looper");
-  await new LocalSheetStore({ directoryPath: localDirectoryPath }).listSheets();
+    current.localDirectoryPath ??
+    defaultLocalSheetDirectoryPath(app.getPath("userData"));
   if (
     current.provider === "local" &&
     current.localDirectoryPath === localDirectoryPath
@@ -1313,6 +1318,7 @@ async function installDownloadedAppUpdate(): Promise<boolean> {
   if (state.preview) return false;
 
   appUpdateDownloadStartedAt = Date.now();
+  appUpdateExitWatchdogArmed = false;
   actualAppUpdateState = {
     preview: false,
     progress: 0,
@@ -1757,6 +1763,19 @@ function createWindow(): void {
 async function startApplicationUpdates(): Promise<void> {
   if (!shouldStartMacAppUpdates(app.isPackaged, process.platform, updateChannel)) {
     return;
+  }
+
+  if (!appUpdateExitWatchdogRegistered) {
+    appUpdateExitWatchdogRegistered = true;
+    nativeAutoUpdater.on("before-quit-for-update", () => {
+      if (appUpdateExitWatchdogArmed) return;
+      appUpdateExitWatchdogArmed = armMacUpdateExitWatchdog({
+        onError: (error) => {
+          appUpdateExitWatchdogArmed = false;
+          console.warn("Could not arm the update exit watchdog.", error.message);
+        }
+      });
+    });
   }
 
   startMacAppUpdates({

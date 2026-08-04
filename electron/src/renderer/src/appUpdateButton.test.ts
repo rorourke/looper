@@ -39,6 +39,10 @@ test("morphs an available update into real download progress and restarts", asyn
   assert.match(main, /await autoUpdater\.downloadUpdate\(\)/);
   assert.match(main, /throw new Error\(updateDownloadFailureMessage\)/);
   assert.match(main, /autoUpdater\.quitAndInstall\(\)/);
+  assert.match(
+    main,
+    /nativeAutoUpdater\.on\("before-quit-for-update"[\s\S]*armMacUpdateExitWatchdog\(/
+  );
   assert.match(main, /onDownloadProgress:[\s\S]*broadcastAppUpdateState\(\)/);
   assert.match(main, /onUpdateDownloaded:[\s\S]*status: "installing"/);
   assert.match(styles, /\.app-update-button\.is-progress \{[\s\S]*width: 38px/);

@@ -38,6 +38,10 @@ const maximumLocalSheetCount = 10_000;
 const maximumLocalSheetFileBytes = CLOUD_DOCUMENT_MAX_BYTES + 64 * 1024;
 const localSheetExtension = ".loop";
 
+export function defaultLocalSheetDirectoryPath(userDataPath: string): string {
+  return join(userDataPath, "sheets");
+}
+
 type LocalSheetMetadata = {
   formatVersion: typeof localSheetFormatVersion;
   id: string;
