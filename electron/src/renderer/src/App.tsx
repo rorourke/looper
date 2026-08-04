@@ -1606,7 +1606,7 @@ function MobileMarketingLibrary({
         />
         <h1>
           <strong>Looper</strong>
-          <span>{" is an open source desktop notebook calculator. It uses the magic word "}</span>
+          <span>{" is an open source notebook calculator. It uses the magic word "}</span>
           <span className="mobile-marketing-loop">loop</span>
           <span>{" to manipulate calculations over time."}</span>
         </h1>
@@ -1647,16 +1647,21 @@ function MobileMarketingLibrary({
 function PublicWebsiteFooter(): ReactElement {
   return (
     <footer className="public-website-footer">
-      <div className="public-website-footer-divider" role="separator" />
       <div className="public-website-footer-content">
-        <span>
-          Created by{" "}
-          <a href={looperCreatorUrl} rel="noreferrer" target="_blank">
-            Ryan O&apos;Rourke
-          </a>
-        </span>
-        <span aria-hidden="true">·</span>
-        <a href={looperSourceUrl} rel="noreferrer" target="_blank">
+        <a
+          className="public-website-footer-pill public-website-footer-creator"
+          href={looperCreatorUrl}
+          rel="noreferrer"
+          target="_blank"
+        >
+          Created by Ryan O&apos;Rourke
+        </a>
+        <a
+          className="public-website-footer-pill"
+          href={looperSourceUrl}
+          rel="noreferrer"
+          target="_blank"
+        >
           View GitHub Project
         </a>
       </div>
@@ -9232,7 +9237,7 @@ export function App({ configuration }: AppProps = {}): ReactElement {
                   <strong>Looper</strong>
                   <span>
                     {publicDemoMode
-                      ? " is an open source desktop notebook calculator. It uses the magic word "
+                      ? " is an open source notebook calculator. It uses the magic word "
                       : " is an advanced notebook calculator. Use the magic word "}
                   </span>
                   <span className="library-hero-accent">loop</span>
@@ -9333,28 +9338,25 @@ export function App({ configuration }: AppProps = {}): ReactElement {
           ) : null}
 
           {templateLibraryDocuments.length > 0 ? (
-            <>
-              <div className="library-divider" role="separator" />
-              <section
-                aria-labelledby="templates-heading"
-                className="getting-started-section"
+            <section
+              aria-labelledby="templates-heading"
+              className="getting-started-section templates-section"
+            >
+              <h2
+                className="library-section-title getting-started-title"
+                id="templates-heading"
               >
-                <h2
-                  className="library-section-title getting-started-title"
-                  id="templates-heading"
-                >
-                  Templates
-                </h2>
-                <div
-                  aria-label="Template sheets"
-                  className="document-grid getting-started-grid"
-                >
-                  {templateLibraryDocuments.map((document) =>
-                    renderLibraryDocumentCard(document)
-                  )}
-                </div>
-              </section>
-            </>
+                Templates
+              </h2>
+              <div
+                aria-label="Template sheets"
+                className="document-grid getting-started-grid"
+              >
+                {templateLibraryDocuments.map((document) =>
+                  renderLibraryDocumentCard(document)
+                )}
+              </div>
+            </section>
           ) : null}
             </>
           )}

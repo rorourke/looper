@@ -60,8 +60,9 @@ test("keeps the restored Looper demo identity and source link", async () => {
   const sharedApp = await readFile(sharedAppUrl, "utf8");
   assert.match(
     sharedApp,
-    /is an open source desktop notebook calculator\. It uses the magic word /
+    /is an open source notebook calculator\. It uses the magic word /
   );
+  assert.doesNotMatch(sharedApp, /open source desktop notebook calculator/);
   assert.match(sharedApp, /to manipulate calculations over time\./);
   assert.match(sharedApp, /https:\/\/github\.com\/rorourke\/looper/);
   assert.match(sharedApp, /<span>View Source<\/span>/);

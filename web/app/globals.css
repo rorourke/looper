@@ -329,39 +329,42 @@
   line-height: 1.4;
 }
 
-:root[data-platform="web"] .public-website-footer-divider {
-  width: 100%;
-  height: 1px;
-  margin-bottom: 24px;
-  background: var(--divider-content);
-}
-
 :root[data-platform="web"] .public-website-footer-content {
   display: flex;
   align-items: center;
   flex-wrap: wrap;
-  gap: 4px 9px;
+  gap: 8px;
 }
 
-:root[data-platform="web"] .public-website-footer a {
+:root[data-platform="web"] .public-website-footer-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 7px 11px;
+  border-radius: 999px;
   color: color-mix(in srgb, var(--text-headerbar-title) 72%, transparent);
+  background: rgba(255, 255, 255, 0.03);
   text-decoration: none;
-  transition: color 140ms ease;
+  transition:
+    color 140ms ease,
+    background 140ms ease;
 }
 
-:root[data-platform="web"] .public-website-footer a:hover {
+:root[data-platform="web"] .public-website-footer-pill:hover {
   color: var(--text-headerbar-title);
+  background: rgba(255, 255, 255, 0.06);
 }
 
-:root[data-platform="web"][data-theme="light"] .public-website-footer a {
+:root[data-platform="web"][data-theme="light"] .public-website-footer-pill {
   color: var(--text-headerbar-title);
+  background: rgba(0, 0, 0, 0.03);
 }
 
-:root[data-platform="web"][data-theme="light"] .public-website-footer a:hover {
+:root[data-platform="web"][data-theme="light"] .public-website-footer-pill:hover {
   color: color-mix(in srgb, var(--text-headerbar-title) 58%, transparent);
+  background: rgba(0, 0, 0, 0.06);
 }
 
-:root[data-platform="web"] .public-website-footer a:focus-visible {
+:root[data-platform="web"] .public-website-footer-pill:focus-visible {
   outline: 2px solid var(--menu-highlight);
   outline-offset: 2px;
 }
@@ -1107,17 +1110,23 @@
     padding-top: 24px;
   }
 
-  :root[data-platform="web"] .public-website-footer-divider {
-    display: none;
-  }
-
   :root[data-platform="web"] .public-website-footer-content {
     justify-content: center;
     text-align: center;
   }
 
-  :root[data-platform="web"] .public-website-footer-content > span {
+  :root[data-platform="web"] .public-website-footer-creator {
     display: none;
+  }
+
+  :root[data-platform="web"] .public-website-footer-pill,
+  :root[data-platform="web"] .public-website-footer-pill:hover,
+  :root[data-platform="web"][data-theme="light"] .public-website-footer-pill,
+  :root[data-platform="web"][data-theme="light"]
+    .public-website-footer-pill:hover {
+    padding: 0;
+    border-radius: 0;
+    background: transparent;
   }
 
   :root[data-platform="web"] .mobile-marketing-intro {

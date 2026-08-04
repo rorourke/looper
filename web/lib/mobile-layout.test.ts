@@ -102,16 +102,19 @@ test("turns the mobile library into a full-width marketing page", async () => {
   assert.match(sharedApp, /https:\/\/github\.com\/rorourke\/looper/);
   assert.match(sharedApp, /function PublicWebsiteFooter\(\): ReactElement/);
   assert.match(sharedApp, /const looperCreatorUrl = "https:\/\/rourkery\.com\/"/);
-  assert.match(sharedApp, /Created by\{" "\}/);
   assert.match(
     sharedApp,
-    /href=\{looperCreatorUrl\}[\s\S]*Ryan O&apos;Rourke/
+    /className="public-website-footer-pill public-website-footer-creator"[\s\S]*href=\{looperCreatorUrl\}[\s\S]*Created by Ryan O&apos;Rourke/
   );
-  assert.match(sharedApp, /<span aria-hidden="true">·<\/span>/);
-  assert.match(sharedApp, />\s*View GitHub Project\s*<\/a>/);
   assert.match(
     sharedApp,
-    /className="public-website-footer-divider" role="separator"/
+    /className="public-website-footer-pill"[\s\S]*href=\{looperSourceUrl\}[\s\S]*View GitHub Project/
+  );
+  assert.doesNotMatch(sharedApp, /public-website-footer-divider|aria-hidden="true">·/);
+  assert.equal(sharedApp.match(/className="library-divider"/g)?.length, 1);
+  assert.match(
+    sharedApp,
+    /className="getting-started-section templates-section"/
   );
   assert.doesNotMatch(sharedApp, /© \{currentYear\}|Ryan Rorke/);
   assert.match(
@@ -134,17 +137,21 @@ test("turns the mobile library into a full-width marketing page", async () => {
     appCss,
     /\.public-website-footer\s*\{[^}]*width:\s*100%;[^}]*max-width:\s*1120px;[^}]*padding-top:\s*48px;[^}]*margin:\s*auto auto 0;/s
   );
-  assert.match(
-    appCss,
-    /\.public-website-footer-divider\s*\{[^}]*height:\s*1px;[^}]*margin-bottom:\s*24px;[^}]*background:\s*var\(--divider-content\);/s
-  );
   assert.doesNotMatch(
     appCss,
-    /\.public-website-footer-divider\s*\{[^}]*mask-image:/s
+    /\.public-website-footer-divider/
   );
   assert.match(
     appCss,
-    /\.public-website-footer-content\s*\{[^}]*display:\s*flex;[^}]*flex-wrap:\s*wrap;[^}]*gap:\s*4px 9px;/s
+    /\.public-website-footer-content\s*\{[^}]*display:\s*flex;[^}]*flex-wrap:\s*wrap;[^}]*gap:\s*8px;/s
+  );
+  assert.match(
+    appCss,
+    /\.public-website-footer-pill\s*\{[^}]*display:\s*inline-flex;[^}]*padding:\s*7px 11px;[^}]*border-radius:\s*999px;[^}]*background:\s*rgba\(255, 255, 255, 0\.03\);/s
+  );
+  assert.match(
+    appCss,
+    /:root\[data-platform="web"\]\[data-theme="light"\] \.public-website-footer-pill\s*\{[^}]*background:\s*rgba\(0, 0, 0, 0\.03\);/s
   );
   assert.match(
     appCss,
@@ -152,7 +159,11 @@ test("turns the mobile library into a full-width marketing page", async () => {
   );
   assert.match(
     appCss,
-    /@media \(max-width:\s*767px\)[\s\S]*?\.public-website-footer-divider\s*\{[^}]*display:\s*none;[\s\S]*?\.public-website-footer-content\s*\{[^}]*justify-content:\s*center;[^}]*text-align:\s*center;/
+    /@media \(max-width:\s*767px\)[\s\S]*?\.public-website-footer-content\s*\{[^}]*justify-content:\s*center;[^}]*text-align:\s*center;/
+  );
+  assert.match(
+    appCss,
+    /@media \(max-width:\s*767px\)[\s\S]*?\.public-website-footer-creator\s*\{[^}]*display:\s*none;[\s\S]*?\.public-website-footer-pill,[\s\S]*?\.public-website-footer-pill:hover\s*\{[^}]*padding:\s*0;[^}]*border-radius:\s*0;[^}]*background:\s*transparent;/
   );
   assert.match(
     appCss,
@@ -168,15 +179,7 @@ test("turns the mobile library into a full-width marketing page", async () => {
   );
   assert.match(
     appCss,
-    /@media \(max-width:\s*767px\)[\s\S]*?\.public-website-footer-content\s*>\s*span\s*\{[^}]*display:\s*none;/
-  );
-  assert.match(
-    appCss,
-    /\.public-website-footer a\s*\{[^}]*(?:color-mix)[^}]*transition:\s*color 140ms ease;/s
-  );
-  assert.doesNotMatch(
-    appCss,
-    /\.public-website-footer a(?:\:hover)?\s*\{[^}]*(?:background|border-radius):/s
+    /\.public-website-footer-pill\s*\{[^}]*(?:color-mix)[^}]*transition:[^}]*color 140ms ease,[^}]*background 140ms ease;/s
   );
   const mobileMarketingLibrary = sharedApp.slice(
     sharedApp.indexOf("function MobileMarketingLibrary"),
@@ -189,7 +192,7 @@ test("turns the mobile library into a full-width marketing page", async () => {
   assert.match(mobileMarketingLibrary, /aria-label="Looper examples"/);
   assert.match(
     mobileMarketingLibrary,
-    /is an open source desktop notebook calculator\. It uses the magic word /
+    /is an open source notebook calculator\. It uses the magic word /
   );
   assert.match(
     mobileMarketingLibrary,

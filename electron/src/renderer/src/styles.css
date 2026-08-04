@@ -3095,10 +3095,18 @@ body:has(.looper-shell[data-view-mode="library"]),
 .library-divider {
   width: 100%;
   max-width: 1120px;
-  height: 1px;
-  flex: 0 0 1px;
+  height: 9px;
+  flex: 0 0 9px;
   margin: 28px auto 0;
   background: var(--divider-results);
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='9' viewBox='0 0 24 9'%3E%3Cpath d='M0 4.5C4 0.5 8 0.5 12 4.5s8 4 12 0' fill='none' stroke='black' stroke-width='2'/%3E%3C/svg%3E");
+  mask-position: left center;
+  mask-repeat: repeat-x;
+  mask-size: 22px 9px;
+  -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='9' viewBox='0 0 24 9'%3E%3Cpath d='M0 4.5C4 0.5 8 0.5 12 4.5s8 4 12 0' fill='none' stroke='black' stroke-width='2'/%3E%3C/svg%3E");
+  -webkit-mask-position: left center;
+  -webkit-mask-repeat: repeat-x;
+  -webkit-mask-size: 22px 9px;
 }
 
 .signed-out-library-actions + .library-divider {
@@ -3108,13 +3116,17 @@ body:has(.looper-shell[data-view-mode="library"]),
 :root[data-platform="darwin"] .document-grid + .library-divider,
 :root[data-platform="win32"] .document-grid + .library-divider,
 :root[data-platform="linux"] .document-grid + .library-divider {
-  margin-top: 36px;
+  margin-top: 32px;
 }
 
 .getting-started-section {
   width: 100%;
   max-width: 1120px;
   margin: 0 auto;
+}
+
+.templates-section {
+  margin-top: 28px;
 }
 
 .library-section-title {

@@ -148,16 +148,12 @@ test("keeps breathing room below the final library row", async () => {
   );
 });
 
-test("uses a straight divider between library sections", async () => {
+test("uses a wavy divider before Looper Basics", async () => {
   const styles = await readFile(stylesUrl, "utf8");
 
   assert.match(
     styles,
-    /\.library-divider\s*\{[^}]*height:\s*1px;[^}]*flex:\s*0 0 1px;[^}]*background:\s*var\(--divider-results\);/s
-  );
-  assert.doesNotMatch(
-    styles,
-    /\.library-divider\s*\{[^}]*mask-image:/s
+    /\.library-divider\s*\{[^}]*height:\s*9px;[^}]*flex:\s*0 0 9px;[^}]*mask-image:\s*url\("data:image\/svg\+xml,[^"]+"\);[^}]*mask-repeat:\s*repeat-x;[^}]*mask-size:\s*22px 9px;[^}]*-webkit-mask-image:/s
   );
 });
 
@@ -166,7 +162,7 @@ test("adds optical spacing between user sheets and the first divider", async () 
 
   assert.match(
     styles,
-    /:root\[data-platform="darwin"\] \.document-grid \+ \.library-divider,[\s\S]*:root\[data-platform="win32"\] \.document-grid \+ \.library-divider,[\s\S]*:root\[data-platform="linux"\] \.document-grid \+ \.library-divider\s*\{[^}]*margin-top:\s*36px;/s
+    /:root\[data-platform="darwin"\] \.document-grid \+ \.library-divider,[\s\S]*:root\[data-platform="win32"\] \.document-grid \+ \.library-divider,[\s\S]*:root\[data-platform="linux"\] \.document-grid \+ \.library-divider\s*\{[^}]*margin-top:\s*32px;/s
   );
 });
 
