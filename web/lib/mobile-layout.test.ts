@@ -136,7 +136,11 @@ test("turns the mobile library into a full-width marketing page", async () => {
   );
   assert.match(
     appCss,
-    /\.public-website-footer-divider\s*\{[^}]*height:\s*9px;[^}]*margin-bottom:\s*24px;[^}]*mask-image:\s*url\("data:image\/svg\+xml,[^"]*M0 4\.5C4 0\.5 8 0\.5 12 4\.5s8 4 12 0[^"]*"\);[^}]*mask-repeat:\s*repeat-x;[^}]*mask-size:\s*22px 9px;[^}]*-webkit-mask-image:/s
+    /\.public-website-footer-divider\s*\{[^}]*height:\s*1px;[^}]*margin-bottom:\s*24px;[^}]*background:\s*var\(--divider-content\);/s
+  );
+  assert.doesNotMatch(
+    appCss,
+    /\.public-website-footer-divider\s*\{[^}]*mask-image:/s
   );
   assert.match(
     appCss,
@@ -157,6 +161,10 @@ test("turns the mobile library into a full-width marketing page", async () => {
   assert.match(
     appCss,
     /@media \(max-width:\s*767px\)[\s\S]*?\.mobile-marketing-intro h1\s*\{[^}]*padding-inline:\s*4px;/
+  );
+  assert.match(
+    appCss,
+    /@media \(max-width:\s*767px\)[\s\S]*?\.mobile-marketing-intro\s*\{[^}]*padding:\s*22px 0 0;/
   );
   assert.match(
     appCss,
