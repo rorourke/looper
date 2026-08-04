@@ -672,20 +672,27 @@ function revisionFifteenDocuments() {
 }
 
 describe("Getting Started example gallery", () => {
-  test("bundles the numbered learning path before the five templates", () => {
+  test("bundles the ten-part learning path before the ten templates", () => {
     const documents = createGettingStartedDocuments("2026-07-18T00:00:00.000Z");
     const expectedTitles = [
       "The Loop Keyword",
       "Math with Variables",
+      "Readable Numbers",
       "Global Variables",
       "Live Stock Prices",
       "Sum Section",
       "Functions",
+      "Recurring Calculations",
       "Advanced Loops",
       "Fancy Math",
       "Compound Interest",
       "Stock Portfolio",
+      "Monthly Budget",
       "Startup Runway",
+      "Subscription Forecast",
+      "Freelance Project Quote",
+      "Trip Budget",
+      "Training Plan",
       "Amortization Schedule",
       "Construction Budget"
     ];
@@ -744,7 +751,11 @@ describe("Getting Started example gallery", () => {
         .every((line) => /^[_A-Za-z][_A-Za-z0-9]*\s*=/.test(line))
     );
 
-    const conciseTitles = new Set(expectedTitles.slice(0, 7));
+    const conciseTitles = new Set<string>(
+      gettingStartedExamples
+        .filter((example) => example.section === "learn" && example.title !== "Fancy Math")
+        .map((example) => example.title)
+    );
 
     documents.forEach((document, index) => {
       const definition = gettingStartedExamples[index];
@@ -860,6 +871,11 @@ describe("Getting Started example gallery", () => {
       Array.from({ length: 12 }, (_, index) => 2_075 * (index + 1))
     );
 
+    const readableNumbers = evaluationFor("Readable Numbers");
+    assert.deepEqual(values(readableNumbers, "cash_needed"), [500_000]);
+    assert.deepEqual(values(readableNumbers, "loan_amount"), [2_000_000]);
+    assert.deepEqual(values(readableNumbers, "annual_interest"), [125_000]);
+
     const marketDetails = evaluationFor("Live Stock Prices");
     assert.deepEqual(values(marketDetails, "apple"), [215]);
     assert.deepEqual(values(marketDetails, "microsoft"), [450]);
@@ -871,6 +887,18 @@ describe("Getting Started example gallery", () => {
     assert.equal(values(functions, "loan_a_lifetime_paid").at(-1), 412_500);
     assert.equal(values(functions, "loan_b_lifetime_paid").at(-1), 375_000);
     assert.equal(values(functions, "lifetime_delta").at(-1), 37_500);
+
+    const recurring = evaluationFor("Recurring Calculations");
+    const recurringBalances: number[] = [];
+    for (let index = 0; index < 8; index += 1) {
+      recurringBalances.push((recurringBalances.at(-1) ?? 0) * 1.01 + 100);
+    }
+    recurringBalances.forEach((expected, index) =>
+      approximately(values(recurring, "balance")[index], expected)
+    );
+    [0, ...recurringBalances.slice(0, -1)].forEach((expected, index) =>
+      approximately(values(recurring, "prior_balance")[index], expected)
+    );
 
     const sections = evaluationFor("Sum Section");
     assert.deepEqual(values(sections, "total"), [900]);
@@ -936,6 +964,15 @@ describe("Getting Started example gallery", () => {
       projectedValue[19] * 0.07
     );
 
+    const monthlyBudget = evaluationFor("Monthly Budget");
+    assert.deepEqual(values(monthlyBudget, "expenses"), Array(12).fill(4_200));
+    assert.deepEqual(values(monthlyBudget, "monthly_savings"), Array(12).fill(3_300));
+    assert.deepEqual(values(monthlyBudget, "savings_rate"), Array(12).fill(0.44));
+    assert.deepEqual(
+      values(monthlyBudget, "savings_to_date"),
+      Array.from({ length: 12 }, (_, index) => 3_300 * (index + 1))
+    );
+
     const runway = evaluationFor("Startup Runway");
     assert.deepEqual(values(runway, "monthly_revenue"), Array(12).fill(25_000));
     assert.deepEqual(values(runway, "monthly_expenses"), Array(12).fill(75_000));
@@ -950,6 +987,48 @@ describe("Getting Started example gallery", () => {
       550_000, 500_000, 450_000, 400_000, 350_000, 300_000,
       250_000, 200_000, 150_000, 100_000, 50_000, 0
     ]);
+
+    const subscription = evaluationFor("Subscription Forecast");
+    const customers = Array.from(
+      { length: 12 },
+      (_, index) => Math.round(250 * 1.08 ** index)
+    );
+    assert.deepEqual(values(subscription, "customers"), customers);
+    assert.deepEqual(
+      values(subscription, "revenue"),
+      customers.map((value) => value * 29)
+    );
+    assert.deepEqual(
+      values(subscription, "profit"),
+      customers.map((value) => value * 23 - 4_000)
+    );
+
+    const freelance = evaluationFor("Freelance Project Quote");
+    assert.deepEqual(values(freelance, "direct_costs"), [5_300]);
+    assert.deepEqual(values(freelance, "total_cost"), [13_100]);
+    approximately(values(freelance, "client_quote")[0], 13_100 / 0.75);
+    approximately(values(freelance, "profit")[0], 13_100 / 0.75 - 13_100);
+
+    const trip = evaluationFor("Trip Budget");
+    assert.deepEqual(values(trip, "fixed_costs"), Array(7).fill(2_820));
+    assert.deepEqual(values(trip, "daily_spend"), Array(7).fill(300));
+    assert.deepEqual(
+      values(trip, "spent_to_date"),
+      Array.from({ length: 7 }, (_, index) => 2_820 + 300 * (index + 1))
+    );
+    assert.deepEqual(
+      values(trip, "per_person"),
+      Array.from({ length: 7 }, (_, index) => (2_820 + 300 * (index + 1)) / 2)
+    );
+
+    const training = evaluationFor("Training Plan");
+    const weeklyMiles = Array.from({ length: 12 }, (_, index) => 15 * 1.08 ** index);
+    const milesToDate: number[] = [];
+    weeklyMiles.forEach((value, index) => {
+      approximately(values(training, "weekly_miles")[index], value);
+      milesToDate.push((milesToDate.at(-1) ?? 0) + value);
+      approximately(values(training, "miles_to_date")[index], milesToDate[index]);
+    });
 
     const amortization = evaluationFor("Amortization Schedule");
     assert.equal(values(amortization, "annual_payment").length, 30);
@@ -977,12 +1056,19 @@ describe("Getting Started example gallery", () => {
     assert.match(source, /^balance = starting_balance \+ monthly_savings \* loop$/m);
     assert.match(source, /^monthly_bills = rent \+ utilities \+ internet$/m);
     assert.match(source, /^year_to_date = monthly_bills \* \(loop \+ 1\)$/m);
+    assert.match(source, /^home_price = \$2\.5M$/m);
+    assert.match(source, /^down_payment = 20%$/m);
+    assert.match(source, /^annual_interest = loan_amount \* annual_rate$/m);
     assert.match(source, /monthlyInterest\(rate, loan\) \{ loan \* \(rate \/ 12\) \}/);
     assert.match(source, /^loan_a_lifetime_paid = loan_a_monthly \* \(loop \+ 1\)$/m);
     assert.match(source, /^loan_b_lifetime_paid = loan_b_monthly \* \(loop \+ 1\)$/m);
     assert.match(
       source,
       /^lifetime_delta = loan_a_lifetime_paid - loan_b_lifetime_paid$/m
+    );
+    assert.match(
+      source,
+      /^balance = loop\.previous\(balance\) \* \(1 \+ weekly_growth\) \+ weekly_deposit$/m
     );
     assert.match(source, /^total = sumsection$/m);
     assert.match(source, /^average = avgsection$/m);
@@ -1044,6 +1130,14 @@ describe("Getting Started example gallery", () => {
     assert.match(
       source,
       /^projected_value = portfolio_value \* \(1 \+ expected_return\) \^ loop$/m
+    );
+    assert.match(source, /^savings_to_date = monthly_savings \* \(loop \+ 1\)$/m);
+    assert.match(source, /^customers = round\(starting_customers \* \(1 \+ monthly_growth\) \^ loop\)$/m);
+    assert.match(source, /^client_quote = total_cost \/ \(1 - target_margin\)$/m);
+    assert.match(source, /^spent_to_date = fixed_costs \+ daily_spend \* \(loop \+ 1\)$/m);
+    assert.match(
+      source,
+      /^miles_to_date = loop\.previous\(miles_to_date\) \+ weekly_miles$/m
     );
 
     const functions = gettingStartedExamples.find(
@@ -2900,6 +2994,38 @@ total = sumsection`,
 
     assert.deepEqual(result.addedDocumentIds, [portfolio.id]);
     assert.deepEqual(result.documents.at(-1), portfolio);
+    assert.equal(
+      result.templateRevisionToPersist,
+      String(GETTING_STARTED_TEMPLATE_REVISION)
+    );
+  });
+
+  test("adds two basics and five templates to a revision-fifty-three gallery", () => {
+    const additions = gettingStartedExamples.filter(
+      (example) => example.introducedRevision === 54
+    );
+    const previousDocuments = createStubs().filter(
+      (document) => !additions.some((example) => example.id === document.id)
+    );
+
+    const result = seedGettingStartedDocuments(
+      previousDocuments,
+      "53",
+      createStubs
+    );
+
+    assert.equal(
+      additions.filter((example) => example.section === "learn").length,
+      2
+    );
+    assert.equal(
+      additions.filter((example) => example.section === "template").length,
+      5
+    );
+    assert.deepEqual(
+      result.addedDocumentIds,
+      additions.map((example) => example.id)
+    );
     assert.equal(
       result.templateRevisionToPersist,
       String(GETTING_STARTED_TEMPLATE_REVISION)

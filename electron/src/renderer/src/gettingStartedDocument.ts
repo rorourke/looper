@@ -1,7 +1,7 @@
 import { visibleLooperText, type LooperDocumentData } from "./looperEngine.ts";
 
 export const LEGACY_GETTING_STARTED_DOCUMENT_ID = "builtin-getting-started";
-export const GETTING_STARTED_TEMPLATE_REVISION = 53;
+export const GETTING_STARTED_TEMPLATE_REVISION = 54;
 export const GETTING_STARTED_TEMPLATE_REVISION_STORAGE_KEY =
   "looper.gettingStartedTemplateRevision";
 
@@ -71,6 +71,26 @@ utilities = $200
 internet = $75
 monthly_bills = rent + utilities + internet
 year_to_date = monthly_bills * (loop + 1)`
+  },
+  {
+    id: "builtin-example-readable-numbers",
+    section: "learn",
+    title: "Readable Numbers",
+    subtitle: "Use currencies, percentages, and k/M shortcuts",
+    loopCount: 0,
+    loopPeriod: "None",
+    isLoopEnabled: false,
+    isLoopVariablePublished: false,
+    isSidebarOpenByDefault: false,
+    publishedVariableNames: ["cash_needed", "loan_amount", "annual_interest"],
+    introducedRevision: 54,
+    text: `Readable numbers:
+home_price = $2.5M
+down_payment = 20%
+cash_needed = home_price * down_payment
+loan_amount = home_price - cash_needed
+annual_rate = 6.25%
+annual_interest = loan_amount * annual_rate`
   },
   {
     id: "builtin-example-global-variables",
@@ -163,6 +183,24 @@ loan_b_monthly = monthlyInterest(3%, $2.5M)
 loan_a_lifetime_paid = loan_a_monthly * (loop + 1)
 loan_b_lifetime_paid = loan_b_monthly * (loop + 1)
 lifetime_delta = loan_a_lifetime_paid - loan_b_lifetime_paid`
+  },
+  {
+    id: "builtin-example-recurring-calculations",
+    section: "learn",
+    title: "Recurring Calculations",
+    subtitle: "Build each value from the previous loop",
+    loopCount: 7,
+    loopPeriod: "Week",
+    isLoopEnabled: true,
+    isLoopVariablePublished: false,
+    isSidebarOpenByDefault: true,
+    publishedVariableNames: ["balance", "prior_balance"],
+    introducedRevision: 54,
+    text: `Recurring calculations:
+weekly_deposit = $100
+weekly_growth = 1%
+balance = loop.previous(balance) * (1 + weekly_growth) + weekly_deposit
+prior_balance = loop.previous(balance)`
   },
   {
     id: "builtin-example-advanced-loops",
@@ -263,6 +301,34 @@ prior_value = loop.previous(projected_value)
 annual_growth = prior_value * expected_return`
   },
   {
+    id: "builtin-example-monthly-budget",
+    section: "template",
+    title: "Monthly Budget",
+    subtitle: "Turn monthly spending into a one-year plan",
+    loopCount: 11,
+    loopPeriod: "Month",
+    isLoopEnabled: true,
+    isSidebarOpenByDefault: true,
+    publishedVariableNames: ["monthly_savings", "savings_rate", "savings_to_date"],
+    introducedRevision: 54,
+    text: `Monthly budget:
+income = $7,500
+
+Monthly expenses:
+rent = $2,400
+utilities = $250
+groceries = $700
+transportation = $450
+insurance = $300
+subscriptions = $100
+expenses = sumsection
+
+Savings:
+monthly_savings = income - expenses
+savings_rate = monthly_savings / income
+savings_to_date = monthly_savings * (loop + 1)`
+  },
+  {
     id: "builtin-example-startup-runway",
     section: "template",
     title: "Startup Runway",
@@ -289,6 +355,104 @@ starting_balance = cash_in_bank - monthly_burn * loop
 revenue = monthly_revenue
 expenses = monthly_expenses
 ending_balance = starting_balance + revenue - expenses`
+  },
+  {
+    id: "builtin-example-subscription-forecast",
+    section: "template",
+    title: "Subscription Forecast",
+    subtitle: "Project customers, revenue, and profit for a year",
+    loopCount: 11,
+    loopPeriod: "Month",
+    isLoopEnabled: true,
+    isSidebarOpenByDefault: true,
+    publishedVariableNames: ["customers", "revenue", "profit", "annual_run_rate"],
+    introducedRevision: 54,
+    text: `Subscription forecast:
+starting_customers = 250
+monthly_growth = 8%
+price = $29
+service_cost = $6
+fixed_costs = $4k
+
+Monthly projection:
+customers = round(starting_customers * (1 + monthly_growth) ^ loop)
+revenue = customers * price
+variable_costs = customers * service_cost
+profit = revenue - variable_costs - fixed_costs
+annual_run_rate = revenue * 12`
+  },
+  {
+    id: "builtin-example-freelance-quote",
+    section: "template",
+    title: "Freelance Project Quote",
+    subtitle: "Price a project from hours, costs, and margin",
+    loopCount: 0,
+    loopPeriod: "None",
+    isLoopEnabled: false,
+    isLoopVariablePublished: false,
+    isSidebarOpenByDefault: false,
+    publishedVariableNames: ["total_cost", "client_quote", "profit"],
+    introducedRevision: 54,
+    text: `Freelance project quote:
+hours = 120
+hourly_cost = $65
+labor = hours * hourly_cost
+
+Project costs:
+software = $800
+travel = $1.5k
+contractors = $3k
+direct_costs = sumsection
+
+Quote:
+target_margin = 25%
+total_cost = labor + direct_costs
+client_quote = total_cost / (1 - target_margin)
+profit = client_quote - total_cost`
+  },
+  {
+    id: "builtin-example-trip-budget",
+    section: "template",
+    title: "Trip Budget",
+    subtitle: "See a seven-day trip total grow day by day",
+    loopCount: 6,
+    loopPeriod: "Day",
+    isLoopEnabled: true,
+    isSidebarOpenByDefault: true,
+    publishedVariableNames: ["fixed_costs", "daily_spend", "spent_to_date", "per_person"],
+    introducedRevision: 54,
+    text: `Trip budget:
+travelers = 2
+flights = $1.2k
+hotel = 6 * $220
+local_transport = $300
+fixed_costs = flights + hotel + local_transport
+
+Daily spending:
+food_per_day = $180
+activities_per_day = $120
+daily_spend = food_per_day + activities_per_day
+spent_to_date = fixed_costs + daily_spend * (loop + 1)
+per_person = spent_to_date / travelers`
+  },
+  {
+    id: "builtin-example-training-plan",
+    section: "template",
+    title: "Training Plan",
+    subtitle: "Build weekly mileage and track the total",
+    loopCount: 11,
+    loopPeriod: "Week",
+    isLoopEnabled: true,
+    isSidebarOpenByDefault: true,
+    publishedVariableNames: ["weekly_miles", "long_run", "easy_miles", "miles_to_date"],
+    introducedRevision: 54,
+    text: `Training plan:
+starting_miles = 15
+weekly_increase = 8%
+weekly_miles = starting_miles * (1 + weekly_increase) ^ loop
+long_run = weekly_miles * 35%
+easy_miles = weekly_miles - long_run
+miles_to_date = loop.previous(miles_to_date) + weekly_miles`
   },
   {
     id: "builtin-example-amortization-schedule",
