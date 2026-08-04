@@ -672,7 +672,7 @@ function revisionFifteenDocuments() {
 }
 
 describe("Getting Started example gallery", () => {
-  test("bundles the numbered learning path before the four templates", () => {
+  test("bundles the numbered learning path before the five templates", () => {
     const documents = createGettingStartedDocuments("2026-07-18T00:00:00.000Z");
     const expectedTitles = [
       "The Loop Keyword",
@@ -684,6 +684,7 @@ describe("Getting Started example gallery", () => {
       "Advanced Loops",
       "Fancy Math",
       "Compound Interest",
+      "Stock Portfolio",
       "Startup Runway",
       "Amortization Schedule",
       "Construction Budget"
@@ -780,7 +781,9 @@ describe("Getting Started example gallery", () => {
       assert.deepEqual(
         extractStockSymbols(document.data.text),
         document.title === "Live Stock Prices"
-            ? ["AAPL", "MSFT"]
+          ? ["AAPL", "MSFT"]
+          : document.title === "Stock Portfolio"
+            ? ["AAPL", "AMZN", "MSFT", "NVDA"]
             : []
       );
       assert.equal(isGettingStartedExampleDocumentId(document.id), true);
@@ -917,6 +920,22 @@ describe("Getting Started example gallery", () => {
       balance[19] * 0.07
     );
 
+    const portfolio = evaluationFor("Stock Portfolio");
+    assert.deepEqual(values(portfolio, "apple"), Array(21).fill(4_300));
+    assert.deepEqual(values(portfolio, "microsoft"), Array(21).fill(5_400));
+    assert.deepEqual(values(portfolio, "nvidia"), Array(21).fill(4_200));
+    assert.deepEqual(values(portfolio, "amazon"), Array(21).fill(1_520));
+    assert.deepEqual(values(portfolio, "portfolio_value"), Array(21).fill(15_420));
+    const projectedValue = values(portfolio, "projected_value");
+    assert.equal(projectedValue.length, 21);
+    approximately(projectedValue[0], 15_420);
+    approximately(projectedValue[20], 15_420 * 1.07 ** 20);
+    approximately(values(portfolio, "annual_growth")[0], 0);
+    approximately(
+      values(portfolio, "annual_growth")[20],
+      projectedValue[19] * 0.07
+    );
+
     const runway = evaluationFor("Startup Runway");
     assert.deepEqual(values(runway, "monthly_revenue"), Array(12).fill(25_000));
     assert.deepEqual(values(runway, "monthly_expenses"), Array(12).fill(75_000));
@@ -1021,6 +1040,11 @@ describe("Getting Started example gallery", () => {
     assert.match(source, /7%/);
     assert.match(source, /\$AAPL(?:\s|$)/);
     assert.match(source, /^difference = microsoft - apple$/m);
+    assert.match(source, /^portfolio_value = sumsection$/m);
+    assert.match(
+      source,
+      /^projected_value = portfolio_value \* \(1 \+ expected_return\) \^ loop$/m
+    );
 
     const functions = gettingStartedExamples.find(
       (example) => example.id === "builtin-example-functions"
@@ -2857,6 +2881,29 @@ total = sumsection`,
     assert.deepEqual(result.addedDocumentIds, [amortization.id]);
     assert.deepEqual(result.documents.at(-1), amortization);
     assert.equal(result.templateRevisionToPersist, String(GETTING_STARTED_TEMPLATE_REVISION));
+  });
+
+  test("adds the stock portfolio template to a revision-fifty-two gallery", () => {
+    const portfolio = createStubs().find(
+      (document) => document.id === "builtin-example-stock-portfolio"
+    );
+    assert.ok(portfolio);
+    const previousDocuments = createStubs().filter(
+      (document) => document.id !== portfolio.id
+    );
+
+    const result = seedGettingStartedDocuments(
+      previousDocuments,
+      "52",
+      createStubs
+    );
+
+    assert.deepEqual(result.addedDocumentIds, [portfolio.id]);
+    assert.deepEqual(result.documents.at(-1), portfolio);
+    assert.equal(
+      result.templateRevisionToPersist,
+      String(GETTING_STARTED_TEMPLATE_REVISION)
+    );
   });
 
   test("upgrades the pristine monthly amortization template to yearly summaries", () => {

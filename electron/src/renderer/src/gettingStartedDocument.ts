@@ -1,7 +1,7 @@
 import { visibleLooperText, type LooperDocumentData } from "./looperEngine.ts";
 
 export const LEGACY_GETTING_STARTED_DOCUMENT_ID = "builtin-getting-started";
-export const GETTING_STARTED_TEMPLATE_REVISION = 52;
+export const GETTING_STARTED_TEMPLATE_REVISION = 53;
 export const GETTING_STARTED_TEMPLATE_REVISION_STORAGE_KEY =
   "looper.gettingStartedTemplateRevision";
 
@@ -237,6 +237,30 @@ return = 7%
 balance = principal * (1 + return) ^ loop
 prior_balance = loop.previous(balance)
 annual_interest = prior_balance * return`
+  },
+  {
+    id: "builtin-example-stock-portfolio",
+    section: "template",
+    title: "Stock Portfolio",
+    subtitle: "Value live holdings and project 20 years",
+    loopCount: 20,
+    loopPeriod: "Year",
+    isLoopEnabled: true,
+    isSidebarOpenByDefault: true,
+    publishedVariableNames: ["projected_value", "annual_growth"],
+    introducedRevision: 53,
+    text: `Stock portfolio:
+apple = $AAPL * 20
+microsoft = $MSFT * 12
+nvidia = $NVDA * 30
+amazon = $AMZN * 8
+portfolio_value = sumsection
+
+20-year projection:
+expected_return = 7%
+projected_value = portfolio_value * (1 + expected_return) ^ loop
+prior_value = loop.previous(projected_value)
+annual_growth = prior_value * expected_return`
   },
   {
     id: "builtin-example-startup-runway",
