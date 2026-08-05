@@ -3,15 +3,42 @@ import { readFile } from "node:fs/promises";
 import test from "node:test";
 
 const webCssUrl = new URL("../app/globals.css", import.meta.url);
+const electronCssUrl = new URL(
+  "../../electron/src/renderer/src/styles.css",
+  import.meta.url
+);
 
-test("keeps the desktop web library header seamless while contents scroll", async () => {
-  const webCss = await readFile(webCssUrl, "utf8");
+test("lets the desktop web library scroll through the window without changing Electron's header", async () => {
+  const [webCss, electronCss] = await Promise.all([
+    readFile(webCssUrl, "utf8"),
+    readFile(electronCssUrl, "utf8")
+  ]);
 
   assert.doesNotMatch(webCss, /--web-header-hairline-width/);
   assert.doesNotMatch(webCss, /\[data-library-scrolled="true"\]::before/);
   assert.match(
     webCss,
-    /@media \(min-width: 768px\)[\s\S]*\.looper-shell\[data-view-mode="library"\]::before\s*\{[^}]*height:\s*var\(--titlebar-height\);[^}]*border-bottom:\s*0;[^}]*background:\s*var\(--library-canvas-bg\);[^}]*box-shadow:\s*none;[^}]*transition:\s*none;/s
+    /@media \(min-width:\s*768px\)[\s\S]*?:root\[data-platform="web"\]:has\(\.document-library\.public-demo-library\) body\s*\{[^}]*overflow-x:\s*hidden;[^}]*overflow-y:\s*auto;/s
+  );
+  assert.match(
+    webCss,
+    /> \.native-titlebar\s*\{[^}]*display:\s*none;/s
+  );
+  assert.match(
+    webCss,
+    /\)::before\s*\{[^}]*content:\s*none;/s
+  );
+  assert.match(
+    webCss,
+    /\.document-library\.public-demo-library\s*\{[^}]*height:\s*auto;[^}]*min-height:\s*100vh;[^}]*overflow:\s*visible;[^}]*padding-top:\s*calc\(var\(--titlebar-height\) \+ 28px\);/s
+  );
+  assert.match(
+    electronCss,
+    /\.looper-shell\[data-view-mode="library"\]::before\s*\{[^}]*content:\s*"";[^}]*height:\s*var\(--integrated-header-fade-end\);[^}]*background:\s*linear-gradient/s
+  );
+  assert.match(
+    electronCss,
+    /@supports[\s\S]*\.looper-shell\[data-view-mode="library"\]::before,[\s\S]*\{[^}]*backdrop-filter:\s*blur\(var\(--integrated-header-blur-radius\)\);/s
   );
 });
 

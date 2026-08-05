@@ -355,7 +355,51 @@
 }
 
 @media (min-width: 768px) {
+  :root[data-platform="web"]:has(.document-library.public-demo-library),
+  :root[data-platform="web"]:has(.document-library.public-demo-library) body,
+  :root[data-platform="web"]:has(.document-library.public-demo-library) #root {
+    height: auto;
+    min-height: 100vh;
+  }
+
+  :root[data-platform="web"]:has(.document-library.public-demo-library) body {
+    min-width: 0;
+    overflow-x: hidden;
+    overflow-y: auto;
+  }
+
+  :root[data-platform="web"]
+    .looper-shell[data-view-mode="library"]:has(
+      > .document-library.public-demo-library
+    ) {
+    display: block;
+    width: 100%;
+    height: auto;
+    min-height: 100vh;
+    overflow: visible;
+    background: var(--library-canvas-bg);
+  }
+
+  :root[data-platform="web"]
+    .looper-shell[data-view-mode="library"]:has(
+      > .document-library.public-demo-library
+    )
+    > .native-titlebar {
+    display: none;
+  }
+
+  :root[data-platform="web"]
+    .looper-shell[data-view-mode="library"]:has(
+      > .document-library.public-demo-library
+    )::before {
+    content: none;
+  }
+
   :root[data-platform="web"] .document-library.public-demo-library {
+    height: auto;
+    min-height: 100vh;
+    overflow: visible;
+    padding-top: calc(var(--titlebar-height) + 28px);
     padding-bottom: 24px;
   }
 }
